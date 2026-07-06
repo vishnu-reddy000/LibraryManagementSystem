@@ -325,7 +325,7 @@ tbody td { padding:13px 16px; color:#071739; vertical-align:middle; }
         display:flex; align-items:center; justify-content:center;
         color:#E3C39D; font-size:18px; margin-bottom:4px; box-shadow:0 3px 10px rgba(7,23,57,.2);
     }
-    .book-card-mobile .book-title  { font-size:12.5px; font-weight:700; color:#071739; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .book-card-mobile .book-title  { font-size:12.5px; font-weight:700; color:#071739; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .book-card-mobile .book-author { font-size:11px; color:#4B6382; }
     .book-card-mobile .book-due    { font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; display:inline-block; margin-top:2px; background:#E3C39D; color:#071739; }
     .book-card-mobile .book-due.overdue { background:#fef2f2; color:#dc2626; }

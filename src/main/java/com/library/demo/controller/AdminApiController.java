@@ -35,7 +35,7 @@ public class AdminApiController {
     }
 
     @PostMapping("/api/admin/pending-requests/read/{id}")
-    public Map<String, String> markAsRead(@PathVariable Long id) {
+    public Map<String, String> markAsRead(@PathVariable long id) {
         borrowRequestRepository.findById(id).ifPresent(req -> {
             req.setAdminRead(true);
             borrowRequestRepository.save(req);
@@ -56,7 +56,7 @@ public class AdminApiController {
     }
 
     @PostMapping("/api/admin/pending-requests/delete/{id}")
-    public Map<String, String> markAsDeleted(@PathVariable Long id) {
+    public Map<String, String> markAsDeleted(@PathVariable long id) {
         borrowRequestRepository.findById(id).ifPresent(req -> {
             req.setAdminDeleted(true);
             borrowRequestRepository.save(req);
