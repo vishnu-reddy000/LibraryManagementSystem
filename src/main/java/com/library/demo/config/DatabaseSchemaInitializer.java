@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +15,9 @@ public class DatabaseSchemaInitializer implements CommandLineRunner {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -61,8 +65,18 @@ public class DatabaseSchemaInitializer implements CommandLineRunner {
             
             // Promote testadmin@gmail.com if exists to ADMIN for verification
             jdbcTemplate.update("UPDATE users SET role = 'ADMIN' WHERE email = 'testadmin@gmail.com'");
+
+            // Seed default admin if no admin accounts exist
+            String checkAdminSql = "SELECT COUNT(*) FROM users WHERE role = 'ADMIN'";
+            Integer adminCount = jdbcTemplate.queryForObject(checkAdminSql, Integer.class);
+            if (adminCount == null || adminCount == 0) {
+                String hashedPassword = passwordEncoder.encode("admin123");
+                String insertAdminSql = "INSERT INTO users (name, email, password, role) VALUES ('Admin', 'admin@gmail.com', ?, 'ADMIN')";
+                jdbcTemplate.update(insertAdminSql, hashedPassword);
+                logger.info("DatabaseSchemaInitializer: Seeded default admin account (admin@gmail.com / admin123)");
+            }
         } catch (Exception e) {
-            logger.warn("DatabaseSchemaInitializer: Failed to list users or promote testadmin@gmail.com: {}", e.getMessage());
+            logger.warn("DatabaseSchemaInitializer: Failed to list users or promote/seed: {}", e.getMessage());
         }
     }
 }
