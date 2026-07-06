@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Fines | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>LMS <span>User</span></h2>
+        </div>
+        <ul>
+            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
+            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
+            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
+            <li><a th:href="@{/user/fines}" class="active"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
+            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
+            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="mobile-topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <span class="logo-text">LMS <span>User</span></span>
+            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-dot" th:if="${notifCount > 0}"></span>
+            </a>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1>My Fines</h1>
+                <h3>View and track your outstanding and paid fines</h3>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="cards" style="margin-bottom: 24px;">
+            <div class="card" style="border-top-color:#dc2626; border-color:#fca5a5;">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
+                <h2 th:text="'₹' + ${totalUnpaid}">₹0.0</h2>
+                <p>Outstanding Fines</p>
+            </div>
+            <div class="card" style="border-top-color:#16a34a; border-color:#a7f3d0;">
+                <i class="fa-solid fa-circle-check" style="color:#16a34a;"></i>
+                <h2 th:text="'₹' + ${totalPaid}">₹0.0</h2>
+                <p>Total Paid Fines</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2 style="margin-bottom: 16px;">Fine History</h2>
+            
+            <div class="table-wrapper">
+                <table th:if="${fines != null and !fines.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Book Title</th>
+                            <th>Amount</th>
+                            <th>Fine Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="fine, stat : ${fines}">
+                            <td th:text="${stat.count}"></td>
+                            <td><strong th:text="${fine.issuedBook.book.title}"></strong></td>
+                            <td th:text="'₹' + ${fine.amount}"></td>
+                            <td th:text="${fine.createdDate}"></td>
+                            <td>
+                                <span th:if="${fine.paid}" class="badge badge-success">PAID</span>
+                                <span th:if="${fine.waived}" class="badge badge-info">WAIVED</span>
+                                <span th:if="${!fine.paid and !fine.waived}" class="badge badge-danger">UNPAID</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div th:if="${fines == null or fines.isEmpty()}" class="empty-state">
+                    <i class="fa-solid fa-indian-rupee-sign" style="color:#6ee7b7;"></i>
+                    <p>No fines incurred. You have a perfect record! 👍</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+        <a th:href="@{/user/fines}" class="active"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
+        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/user.js(v='2.1')}"></script>
+</body>
+</html>

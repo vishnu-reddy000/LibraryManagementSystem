@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' | LMS'">Book Form | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>Book<span>Base</span></h2>
+        </div>
+        <ul>
+            <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/books}" class="active"><i class="fa-solid fa-book"></i> Books</a></li>
+            <li><a th:href="@{/users}"><i class="fa-solid fa-users"></i> Users</a></li>
+            <li><a th:href="@{/issue-books}"><i class="fa-solid fa-book-open-reader"></i> Issue Books</a></li>
+            <li><a th:href="@{/return-books}"><i class="fa-solid fa-rotate-left"></i> Return Books</a></li>
+            <li><a th:href="@{/reports}"><i class="fa-solid fa-chart-column"></i> Reports</a></li>
+            <li><a th:href="@{/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> Fine Management</a></li>
+            <li><a th:href="@{/categories}"><i class="fa-solid fa-tags"></i> Categories</a></li>
+            <li><a th:href="@{/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="topbar-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search books, users...">
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-icon"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></div>
+                <div class="topbar-user">
+                    <div class="user-avatar">A</div>
+                    <span class="user-name">Admin</span>
+                </div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="page-header">
+                <div><h1 th:text="${pageTitle}">Book Form</h1><p>Fill in the details below</p></div>
+                <a th:href="@{/books}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to Books</a>
+            </div>
+            <div class="content">
+                <div class="form-section">
+                    <form th:action="${book.id != null ? '/books/edit/' + book.id : '/books/add'}" th:object="${book}" method="post" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Title *</label>
+                                <input type="text" th:field="*{title}" placeholder="Book title">
+                                <span class="error-msg" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Author *</label>
+                                <input type="text" th:field="*{author}" placeholder="Author name">
+                                <span class="error-msg" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>ISBN *</label>
+                                <input type="text" th:field="*{isbn}" placeholder="e.g. 978-3-16-148410-0">
+                                <span class="error-msg" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}"></span>
+                            </div>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select th:field="*{category}" style="padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:14px;font-family:inherit;width:100%;background:#fff;color:#0f172a;">
+                                    <option value="">-- Choose Category --</option>
+                                    <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Total Copies</label>
+                                <input type="number" th:field="*{totalCopies}" min="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Available Copies</label>
+                                <input type="number" th:field="*{availableCopies}" min="0" placeholder="0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Price Per Day (₹)</label>
+                                <input type="number" th:field="*{pricePerDay}" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty to balance the row -->
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Book Cover Photo URL (Cloudinary, etc.)</label>
+                                <input type="text" th:field="*{imageUrl}" placeholder="e.g. https://res.cloudinary.com/...">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Or Upload Local Photo File</label>
+                                <input type="file" name="imageFile" accept="image/*" style="padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;background:#f8fafc;outline:none;font-size:13px;width:100%;">
+                            </div>
+                        </div>
+                        <div class="buttons">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span th:text="${book.id != null ? 'Update Book' : 'Save Book'}">Save</span>
+                            </button>
+                            <a th:href="@{/books}" class="btn btn-danger"><i class="fa-solid fa-xmark"></i> Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

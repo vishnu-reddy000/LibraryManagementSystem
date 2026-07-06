@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Library Management System</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* Extra spacing for signup form */
+        .form-group { margin-bottom: 14px; }
+        .btn-login { margin-top: 6px; }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT: Branding panel (identical to login) -->
+    <div class="left-panel">
+
+        <div class="deco-books">
+            <i class="fa-solid fa-book"></i>
+            <i class="fa-solid fa-book-open"></i>
+            <i class="fa-solid fa-bookmark"></i>
+            <i class="fa-solid fa-graduation-cap"></i>
+            <i class="fa-solid fa-scroll"></i>
+        </div>
+
+        <div class="brand">
+            <img th:src="@{/images/logo.png}" alt="Logo" class="brand-icon" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.3); margin-bottom: 20px;">
+            <h1>Library<br><span>Management</span><br>System</h1>
+            <p>Your gateway to knowledge. Browse, borrow, and manage books seamlessly.</p>
+        </div>
+
+    </div>
+
+    <!-- RIGHT: Sign Up card -->
+    <div class="right-panel">
+        <div class="login-card">
+
+            <div class="card-header">
+                <h2>Create account</h2>
+                <p>Fill in the details to get started</p>
+
+                <div class="tabs">
+                    <a th:href="@{/login}">Log In</a>
+                    <a th:href="@{/signup}" class="active">Sign Up</a>
+                </div>
+            </div>
+
+            <!-- Error message -->
+            <div th:if="${error}" class="alert-box alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <form th:action="@{/signup}" method="post">
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" placeholder="Your full name" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-eye">
+                        <input type="password" name="password" id="signupPassword" placeholder="••••••••" required>
+                        <i class="fa-regular fa-eye-slash" id="toggleSignupPassword" onclick="togglePassword('signupPassword','toggleSignupPassword')"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="input-eye">
+                        <input type="password" name="confirmPassword" id="confirmPassword" placeholder="••••••••" required>
+                        <i class="fa-regular fa-eye-slash" id="toggleConfirmPassword" onclick="togglePassword('confirmPassword','toggleConfirmPassword')"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fa-solid fa-user-plus"></i> Create Account
+                </button>
+
+            </form>
+
+            <div class="divider">
+                <hr><span>OR</span><hr>
+            </div>
+
+            <div class="card-footer">
+                Already have an account? <a th:href="@{/login}">Log in</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+
+        const form = document.querySelector("form");
+        form.addEventListener("submit", (e) => {
+            const pass = document.getElementById('signupPassword').value;
+            const confirmInput = document.getElementById('confirmPassword');
+            const confirm = confirmInput.value;
+
+            if (pass !== confirm) {
+                e.preventDefault();
+                confirmInput.setCustomValidity("Passwords do not match.");
+                confirmInput.reportValidity();
+            } else {
+                confirmInput.setCustomValidity("");
+            }
+        });
+
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            this.setCustomValidity("");
+        });
+    </script>
+
+</body>
+</html>

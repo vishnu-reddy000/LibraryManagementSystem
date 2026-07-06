@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Books | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link class="style" rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .view-toggle-btn {
+            background: #fff;
+            border: 1.5px solid #e2e8f0;
+            color: #64748b;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .view-toggle-btn:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        .view-toggle-btn.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: #fff;
+        }
+        .book-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1.5px solid #f1f5f9;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
+        }
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -8px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+        .book-cover {
+            aspect-ratio: 3 / 4;
+            background: #f8fafc;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 1.5px solid #f1f5f9;
+        }
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .book-card:hover .book-cover img {
+            transform: scale(1.05);
+        }
+        .book-details {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo"><i class="fa-solid fa-book-open"></i><h2>LMS <span>User</span></h2></div>
+        <ul>
+            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/user/books}" class="active"><i class="fa-solid fa-book"></i> Browse Books</a></li>
+            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-clock-rotate-left"></i> Book History</a></li>
+            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
+            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
+            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification<span th:if="${notifCount > 0}" class="badge badge-danger" th:text="${notifCount}"></span></a></li>
+            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer"><a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+    </div>
+    <div class="main">
+        <!-- Mobile Topbar -->
+        <div class="mobile-topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <span class="logo-text">LMS <span>User</span></span>
+            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-dot" th:if="${notifCount > 0}"></span>
+            </a>
+        </div>
+
+        <!-- Desktop Header -->
+        <div class="header">
+            <div>
+                <h1>Browse Books</h1>
+                <h3>All books available in the library</h3>
+            </div>
+        </div>
+
+        <div class="content">
+            <div th:if="${success}" class="alert-success" style="background:#e6fffa;color:#047857;border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;"><i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span></div>
+            <div th:if="${error}" class="alert-error" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <div class="search-bar" style="margin:0;flex:1;max-width:400px;">
+                    <form th:action="@{/user/books}" method="get" style="display:flex;gap:8px;width:100%;">
+                        <input type="text" name="search" placeholder="Search by title or author..." th:value="${search}" style="flex:1;">
+                        <button type="submit" class="btn" style="white-space:nowrap;"><i class="fa-solid fa-search"></i> Search</button>
+                        <a th:if="${search}" th:href="@{/user/books}" class="btn btn-outline" style="white-space:nowrap;">Clear</a>
+                    </form>
+                </div>
+                <div style="display:flex;gap:8px;"><button id="btnGridView" class="view-toggle-btn" onclick="setViewMode('grid')"><i class="fa-solid fa-grip"></i> Grid</button><button id="btnListView" class="view-toggle-btn" onclick="setViewMode('list')"><i class="fa-solid fa-list"></i> List</button></div>
+            </div>
+            <div th:if="${books == null or books.isEmpty()}" class="empty-state"><i class="fa-solid fa-book-open"></i><p>No books found.</p></div>
+            <div id="booksGrid" style="display:none;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:20px;margin-bottom:24px;" th:if="${books != null and !books.isEmpty()}">
+                <div class="book-card" th:each="book : ${books}">
+                    <div class="book-cover">
+                        <img th:if="${book.imageUrl != null and !book.imageUrl.isEmpty()}" th:src="${book.imageUrl}" alt="Cover">
+                        <div th:if="${book.imageUrl == null or book.imageUrl.isEmpty()}" style="width:100%;height:100%;background:linear-gradient(135deg, #10b981 0%, #059669 100%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;gap:8px;">
+                            <i class="fa-solid fa-book" style="font-size:36px;opacity:0.85;"></i>
+                            <span th:text="${book.title}" style="font-size:14px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-family:sans-serif;"></span>
+                        </div>
+                        <span class="badge" th:classappend="${book.availableCopies > 0 ? 'badge-success' : 'badge-danger'}" th:text="${book.availableCopies > 0 ? 'Available' : 'Unavailable'}" style="position:absolute;top:12px;right:12px;font-size:10px;padding:4px 8px;border-radius:6px;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,0.1);"></span>
+                    </div>
+                    <div class="book-details">
+                        <h3 th:text="${book.title}" style="margin:0;font-size:15px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:sans-serif;"></h3>
+                        <p th:text="${book.author}" style="margin:0 0 8px;font-size:13px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:sans-serif;"></p>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1.5px solid #f8fafc;">
+                            <span class="badge" th:style="'font-size:11px;padding:3px 8px;border-radius:6px;background:' + (${categoryColors[#strings.toLowerCase(book.category)]} ?: '#64748b') + '22;color:' + (${categoryColors[#strings.toLowerCase(book.category)]} ?: '#64748b') + ';'" th:text="${book.category} ?: 'General'"></span>
+                            
+                            <!-- Return button (If already borrowed) -->
+                            <button th:if="${bookToIssueMap.containsKey(book.id)}" type="button" class="btn btn-warning btn-sm" style="background:#f59e0b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;font-size:11px;" th:onclick="'showReturnModal(' + ${bookToIssueMap.get(book.id)} + ')'"><i class="fa-solid fa-rotate-left"></i> Return</button>
+                            
+                            <!-- Borrow / Request buttons (If not borrowed) -->
+                            <button th:if="${book.availableCopies > 0 and !bookToIssueMap.containsKey(book.id)}" type="button" class="btn btn-success btn-sm" style="background:#10b981;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;font-size:11px;" th:onclick="'showBorrowModal(' + ${book.id} + ')'"><i class="fa-solid fa-hand-holding-hand"></i> Borrow</button>
+                            <form th:if="${book.availableCopies == 0 and !bookToIssueMap.containsKey(book.id)}" th:action="@{/user/books/request/{id}(id=${book.id})}" method="post" style="margin:0;display:inline;"><button type="submit" class="btn btn-warning btn-sm" style="background:#f59e0b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;font-size:11px;"><i class="fa-regular fa-bell"></i> Request</button></form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="booksList" class="table-wrapper" style="display:none;" th:if="${books != null and !books.isEmpty()}">
+                <table>
+                    <thead><tr><th>#</th><th>Cover</th><th>Title</th><th>Author</th><th>Category</th><th>Availability</th><th>Action</th></tr></thead>
+                    <tbody>
+                        <tr th:each="book, stat : ${books}">
+                            <td th:text="${stat.count}"></td>
+                            <td>
+                                <img th:if="${book.imageUrl != null and !book.imageUrl.isEmpty()}" th:src="${book.imageUrl}" style="width:40px;height:55px;object-fit:cover;border-radius:4px;border:1px solid #e2e8f0;" alt="Cover">
+                                <div th:if="${book.imageUrl == null or book.imageUrl.isEmpty()}" style="width:40px;height:55px;background:linear-gradient(135deg, #10b981, #059669);color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;"><i class="fa-solid fa-book"></i></div>
+                            </td>
+                            <td><strong th:text="${book.title}"></strong></td>
+                            <td th:text="${book.author}"></td>
+                            <td><span class="badge" th:style="'font-size:11px;padding:3px 8px;border-radius:6px;background:' + (${categoryColors[#strings.toLowerCase(book.category)]} ?: '#64748b') + '22;color:' + (${categoryColors[#strings.toLowerCase(book.category)]} ?: '#64748b') + ';'" th:text="${book.category} ?: 'General'"></span></td>
+                            <td><span th:if="${book.availableCopies > 0}" class="badge badge-success" th:text="${book.availableCopies} + ' Available'"></span><span th:if="${book.availableCopies == 0}" class="badge badge-danger">Not Available</span></td>
+                            <td>
+                                <!-- Return button (If already borrowed) -->
+                                <button th:if="${bookToIssueMap.containsKey(book.id)}" type="button" class="btn btn-warning btn-sm" style="background:#f59e0b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;" th:onclick="'showReturnModal(' + ${bookToIssueMap.get(book.id)} + ')'"><i class="fa-solid fa-rotate-left"></i> Return</button>
+                                
+                                <!-- Borrow / Request buttons (If not borrowed) -->
+                                <button th:if="${book.availableCopies > 0 and !bookToIssueMap.containsKey(book.id)}" type="button" class="btn btn-success btn-sm" style="background:#10b981;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;" th:onclick="'showBorrowModal(' + ${book.id} + ')'"><i class="fa-solid fa-hand-holding-hand"></i> Borrow</button>
+                                <form th:if="${book.availableCopies == 0 and !bookToIssueMap.containsKey(book.id)}" th:action="@{/user/books/request/{id}(id=${book.id})}" method="post" style="display:inline;"><button type="submit" class="btn btn-warning btn-sm" style="background:#f59e0b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;"><i class="fa-regular fa-bell"></i> Request</button></form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Borrow Modal -->
+    <div id="borrowModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;padding:28px;width:420px;max-width:90vw;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid #f1f5f9;">
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:#0f172a;font-family:sans-serif;">Borrow Book</h3>
+                <button onclick="closeBorrowModal()" style="background:none;border:none;font-size:20px;color:#94a3b8;cursor:pointer;outline:none;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="borrowForm" action="" method="post">
+                <!-- Number of days -->
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;margin-bottom:8px;font-size:14px;font-weight:600;color:#374151;font-family:sans-serif;">Number of Days</label>
+                    <input type="number" name="borrowDays" id="borrowDays" min="1" max="365" value="14" required
+                           oninput="updateBorrowPrice()"
+                           style="width:100%;padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:14px;background:#fff;color:#0f172a;box-sizing:border-box;">
+                </div>
+                <!-- Calculated Due Date display -->
+                <div style="margin-bottom:16px; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px 14px; font-family:sans-serif;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:13px;color:#475569;font-weight:500;">Expected Due Date:</span>
+                        <span id="calculatedDueDate" style="font-size:14px;font-weight:700;color:#0f172a;">-</span>
+                    </div>
+                </div>
+                <!-- Calculated total price display -->
+                <div id="rentalPriceBox" style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-bottom:16px;display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;font-family:sans-serif;">
+                        <span style="font-size:13px;color:#374151;">Price per day:</span>
+                        <span id="pricePerDayDisplay" style="font-size:13px;font-weight:600;color:#059669;">₹0.00</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #bbf7d0;font-family:sans-serif;">
+                        <span style="font-size:15px;font-weight:700;color:#0f172a;">Total Rental Cost:</span>
+                        <span id="totalPriceDisplay" style="font-size:18px;font-weight:800;color:#059669;">₹0.00</span>
+                    </div>
+                </div>
+                <div id="freeBorrowNote" style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1d4ed8;font-family:sans-serif;display:none;">
+                    <i class="fa-solid fa-circle-info"></i> This book is free to borrow.
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline" onclick="closeBorrowModal()" style="margin:0;padding:8px 16px;font-size:13px;">Cancel</button>
+                    <button type="submit" class="btn btn-success" style="margin:0;padding:8px 16px;font-size:13px;background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:600;border-radius:6px;">Confirm Borrow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Return Modal -->
+    <div id="returnModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;padding:28px;width:400px;max-width:90vw;text-align:center;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
+            <div style="width:56px;height:56px;background:#e6f4ea;color:#137333;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f172a;font-family:sans-serif;">Confirm Return</h3>
+            <p style="margin:0 0 24px;font-size:14px;color:#64748b;line-height:1.5;font-family:sans-serif;">Are you sure you want to return this book?</p>
+            <div style="display:flex;gap:12px;justify-content:center;">
+                <button type="button" class="btn btn-outline" onclick="closeReturnModal()" style="margin:0;padding:10px 20px;font-size:14px;">Cancel</button>
+                <form id="returnForm" action="" method="post" style="margin:0;">
+                    <button type="submit" class="btn btn-success" style="margin:0;padding:10px 20px;font-size:14px;background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:600;border-radius:6px;">Confirm Return</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a th:href="@{/user/books}" class="active"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
+        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/user.js(v='2.1')}"></script>
+    <script th:inline="javascript">
+        // Book price map injected from server: { bookId: pricePerDay }
+        const bookPriceMap = /*[[${bookPriceMap}]]*/ {};
+
+        function setViewMode(mode) {
+            if (mode === 'grid') {
+                document.getElementById('booksGrid').style.display = 'grid';
+                document.getElementById('booksList').style.display = 'none';
+                document.getElementById('btnGridView').classList.add('active');
+                document.getElementById('btnListView').classList.remove('active');
+            } else {
+                document.getElementById('booksGrid').style.display = 'none';
+                document.getElementById('booksList').style.display = 'block';
+                document.getElementById('btnGridView').classList.remove('active');
+                document.getElementById('btnListView').classList.add('active');
+            }
+            localStorage.setItem('booksViewMode', mode);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var preferredMode = localStorage.getItem('booksViewMode') || 'grid';
+            setViewMode(preferredMode);
+        });
+
+        let currentBookId = null;
+
+        function showBorrowModal(bookId) {
+            currentBookId = bookId;
+            document.getElementById('borrowForm').action = '/user/books/borrow/' + bookId;
+            document.getElementById('borrowDays').value = 14;
+            updateBorrowPrice();
+            document.getElementById('borrowModal').style.display = 'flex';
+        }
+        
+        function closeBorrowModal() {
+            document.getElementById('borrowModal').style.display = 'none';
+            currentBookId = null;
+        }
+
+        function updateBorrowPrice() {
+            const days = parseInt(document.getElementById('borrowDays').value) || 0;
+            const pricePerDay = (currentBookId && bookPriceMap[currentBookId]) ? bookPriceMap[currentBookId] : 0;
+            const total = pricePerDay * days;
+
+            // Calculate and display due date
+            const today = new Date();
+            today.setDate(today.getDate() + days);
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1;
+            let dd = today.getDate();
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+            document.getElementById('calculatedDueDate').textContent = yyyy + '-' + mm + '-' + dd;
+
+            const priceBox = document.getElementById('rentalPriceBox');
+            const freeNote = document.getElementById('freeBorrowNote');
+
+            if (pricePerDay > 0) {
+                document.getElementById('pricePerDayDisplay').textContent = '₹' + pricePerDay.toFixed(2);
+                document.getElementById('totalPriceDisplay').textContent = '₹' + total.toFixed(2);
+                priceBox.style.display = 'block';
+                freeNote.style.display = 'none';
+            } else {
+                priceBox.style.display = 'none';
+                freeNote.style.display = 'block';
+            }
+        }
+
+        function showReturnModal(issueId) {
+            document.getElementById('returnForm').action = '/user/books/return/' + issueId;
+            document.getElementById('returnModal').style.display = 'flex';
+        }
+        
+        function closeReturnModal() {
+            document.getElementById('returnModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

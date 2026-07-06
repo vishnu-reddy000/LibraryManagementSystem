@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .notif-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-left: 4px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .notif-card.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .notif-card.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .notif-card.success {
+            border-left-color: #10b981;
+            background: #ecfdf5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>LMS <span>User</span></h2>
+        </div>
+        <ul>
+            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
+            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
+            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
+            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
+            <li><a th:href="@{/user/notifications}" class="active"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
+            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="mobile-topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <span class="logo-text">LMS <span>User</span></span>
+            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-dot" th:if="${notifCount > 0}"></span>
+            </a>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1>Notifications</h1>
+                <h3>View system alerts, borrow status updates, and warnings</h3>
+            </div>
+        </div>
+
+        <div class="content" style="background:transparent; border:none; box-shadow:none; padding:0;">
+            <div th:if="${notifications != null and !notifications.isEmpty()}">
+                <div th:each="notif : ${notifications}" 
+                     th:class="'notif-card ' + ${notif.type}"
+                     style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span th:text="${notif.text}"></span>
+                    <form th:if="${notif.dismissible}" th:action="@{${notif.dismissUrl}}" method="post" style="margin: 0; display: inline-block;">
+                        <button type="submit" style="background: none; border: none; color: inherit; opacity: 0.5; cursor: pointer; font-size: 16px; display: flex; align-items: center; padding: 4px; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5" aria-label="Dismiss">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div th:if="${notifications == null or notifications.isEmpty()}" class="empty-state" style="background:#fff; border-radius:16px; border:1px solid #d1fae5; box-shadow:0 1px 6px rgba(0,0,0,.05);">
+                <i class="fa-solid fa-bell-slash" style="color: #6ee7b7;"></i>
+                <p>No new notifications at this time.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
+        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/user.js(v='2.1')}"></script>
+</body>
+</html>

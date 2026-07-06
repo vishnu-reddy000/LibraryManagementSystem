@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo"><i class="fa-solid fa-book-open"></i><h2>Book<span>Base</span></h2></div>
+        <ul>
+            <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/books}"><i class="fa-solid fa-book"></i> Books</a></li>
+            <li><a th:href="@{/users}"><i class="fa-solid fa-users"></i> Users</a></li>
+            <li><a th:href="@{/issue-books}"><i class="fa-solid fa-book-open-reader"></i> Issue Books</a></li>
+            <li><a th:href="@{/return-books}"><i class="fa-solid fa-rotate-left"></i> Return Books</a></li>
+            <li><a th:href="@{/reports}" class="active"><i class="fa-solid fa-chart-column"></i> Reports</a></li>
+            <li><a th:href="@{/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> Fine Management</a></li>
+            <li><a th:href="@{/categories}"><i class="fa-solid fa-tags"></i> Categories</a></li>
+            <li><a th:href="@{/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer"><a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+            <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search..."></div>
+            <div class="topbar-right">
+                <div class="topbar-icon"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></div>
+                <div class="topbar-user"><div class="user-avatar">A</div><span class="user-name">Admin</span></div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="page-header"><div><h1>Reports</h1><p>Library activity overview</p></div></div>
+
+            <!-- Stat cards -->
+            <div class="dash-stats" style="grid-template-columns:repeat(5,1fr);">
+                <div class="stat-card"><div class="stat-icon si-green"><i class="fa-solid fa-book"></i></div><div class="stat-info"><h2 th:text="${totalBooks}">0</h2><p>Total Books</p></div></div>
+                <div class="stat-card"><div class="stat-icon si-orange"><i class="fa-solid fa-users"></i></div><div class="stat-info"><h2 th:text="${totalUsers}">0</h2><p>Registered Users</p></div></div>
+                <div class="stat-card"><div class="stat-icon si-blue"><i class="fa-solid fa-book-open"></i></div><div class="stat-info"><h2 th:text="${issuedBooks}">0</h2><p>Currently Issued</p></div></div>
+                <div class="stat-card"><div class="stat-icon si-amber"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><h2 th:text="${overdueBooks}">0</h2><p>Overdue</p></div></div>
+                <div class="stat-card"><div class="stat-icon si-purple"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="stat-info"><h2 th:text="'₹' + ${#numbers.formatDecimal(totalFines ?: 0, 1, 0)}">₹0</h2><p>Fines Collected</p></div></div>
+            </div>
+
+            <!-- Charts row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                <div class="content">
+                    <h2>Books Issued Per Month</h2>
+                    <canvas id="issuedChart" height="140"></canvas>
+                </div>
+                <div class="content">
+                    <h2>Issue Status Breakdown</h2>
+                    <canvas id="statusChart" height="140"></canvas>
+                </div>
+            </div>
+
+            <!-- All Issue Records Table -->
+            <div class="content">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;">
+                    <h2 style="margin:0;border:none;padding:0;">All Issue Records</h2>
+                    <span class="badge badge-info" th:text="${#lists.size(allIssues)} + ' records'">0 records</span>
+                </div>
+                <div class="table-wrapper">
+                    <table th:if="${allIssues != null and !allIssues.isEmpty()}">
+                        <thead><tr><th>#</th><th>Book</th><th>User</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr th:each="issue, stat : ${allIssues}">
+                                <td th:text="${stat.count}"></td>
+                                <td><strong th:text="${issue.book.title}"></strong></td>
+                                <td th:text="${issue.member.name}"></td>
+                                <td th:text="${issue.issueDate}"></td>
+                                <td th:text="${issue.dueDate}"></td>
+                                <td th:text="${issue.returnDate} ?: '-'"></td>
+                                <td>
+                                    <span th:class="${issue.status.name() == 'RETURNED'} ? 'badge badge-success' :
+                                                   (${issue.status.name() == 'OVERDUE'} ? 'badge badge-danger' : 'badge badge-warning')"
+                                          th:text="${issue.status}"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div th:if="${allIssues == null or allIssues.isEmpty()}" class="empty-state"><i class="fa-solid fa-chart-column"></i><p>No issue records yet.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        new Chart(document.getElementById('issuedChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+                datasets: [{ label:'Issued', data:[8,12,9,15,11,18], borderColor:'#1d4ed8', backgroundColor:'rgba(29,78,216,0.08)', tension:0.4, fill:true, pointBackgroundColor:'#1d4ed8', pointRadius:4 }]
+            },
+            options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true,grid:{color:'#f1f5f9'}}, x:{grid:{display:false}} } }
+        });
+
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Issued','Returned','Overdue'],
+                datasets: [{ data: [ [[${issuedBooks}]], [[${returnedBooks}]], [[${overdueBooks}]] ], backgroundColor:['#f59e0b','#10b981','#ef4444'], borderWidth:0, hoverOffset:6 }]
+            },
+            options: { responsive:true, cutout:'60%', plugins:{ legend:{ position:'right', labels:{ boxWidth:12, font:{size:11} } } } }
+        });
+    </script>
+</body>
+</html>

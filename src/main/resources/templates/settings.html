@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo"><i class="fa-solid fa-book-open"></i><h2>Book<span>Base</span></h2></div>
+        <ul>
+            <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/books}"><i class="fa-solid fa-book"></i> Books</a></li>
+            <li><a th:href="@{/users}"><i class="fa-solid fa-users"></i> Users</a></li>
+            <li><a th:href="@{/issue-books}"><i class="fa-solid fa-book-open-reader"></i> Issue Books</a></li>
+            <li><a th:href="@{/return-books}"><i class="fa-solid fa-rotate-left"></i> Return Books</a></li>
+            <li><a th:href="@{/reports}"><i class="fa-solid fa-chart-column"></i> Reports</a></li>
+            <li><a th:href="@{/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> Fine Management</a></li>
+            <li><a th:href="@{/categories}"><i class="fa-solid fa-tags"></i> Categories</a></li>
+            <li><a th:href="@{/settings}" class="active"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer"><a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+            <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search..."></div>
+            <div class="topbar-right">
+                <div class="topbar-icon"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></div>
+                <div class="topbar-user"><div class="user-avatar">A</div><span class="user-name">Admin</span></div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="page-header">
+                <div><h1>Settings</h1><p>Manage your account and library configuration</p></div>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success"><i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span></div>
+            <div th:if="${error}"   class="alert alert-error"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+                <!-- Profile Settings -->
+                <div class="content">
+                    <h2><i class="fa-solid fa-user" style="color:#1d4ed8;margin-right:8px;"></i>Profile Settings</h2>
+                    <form th:action="@{/settings/update-profile}" method="post">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" th:value="${adminUser?.name}" placeholder="Admin name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" th:value="${adminUser?.email}" disabled
+                                   style="background:#f8fafc;color:#94a3b8;cursor:not-allowed;">
+                            <small style="color:#94a3b8;font-size:11px;">Email cannot be changed</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <input type="text" th:value="${adminUser?.role}" disabled
+                                   style="background:#f8fafc;color:#94a3b8;cursor:not-allowed;">
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
+                    </form>
+                </div>
+
+                <!-- Change Password -->
+                <div class="content">
+                    <h2><i class="fa-solid fa-lock" style="color:#dc2626;margin-right:8px;"></i>Change Password</h2>
+                    <form th:action="@{/settings/change-password}" method="post">
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <div class="input-eye">
+                                <input type="password" name="newPassword" id="newPwd" placeholder="Min 6 characters" required>
+                                <i class="fa-regular fa-eye-slash" id="tgNew" onclick="togglePassword('newPwd','tgNew')"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <div class="input-eye">
+                                <input type="password" name="confirmPassword" id="confPwd" placeholder="••••••••" required>
+                                <i class="fa-regular fa-eye-slash" id="tgConf" onclick="togglePassword('confPwd','tgConf')"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-key"></i> Change Password</button>
+                    </form>
+                </div>
+
+                <!-- Library Configuration -->
+                <div class="content">
+                    <h2><i class="fa-solid fa-sliders" style="color:#059669;margin-right:8px;"></i>Library Configuration</h2>
+                    <div style="display:flex;flex-direction:column;gap:16px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                            <div>
+                                <div style="font-size:14px;font-weight:600;color:#0f172a;">Fine Per Day</div>
+                                <div style="font-size:12px;color:#64748b;">Charged for overdue books</div>
+                            </div>
+                            <div style="font-size:18px;font-weight:800;color:#059669;" th:text="'₹' + ${finePerDay}">₹5</div>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                            <div>
+                                <div style="font-size:14px;font-weight:600;color:#0f172a;">Max Issue Period</div>
+                                <div style="font-size:12px;color:#64748b;">Days allowed to keep a book</div>
+                            </div>
+                            <div style="font-size:18px;font-weight:800;color:#1d4ed8;" th:text="${maxIssueDays} + ' days'">14 days</div>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                            <div>
+                                <div style="font-size:14px;font-weight:600;color:#0f172a;">Database</div>
+                                <div style="font-size:12px;color:#64748b;">MySQL — library_management</div>
+                            </div>
+                            <span class="badge badge-success">Connected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="content">
+                    <h2><i class="fa-solid fa-link" style="color:#7c3aed;margin-right:8px;"></i>Quick Links</h2>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <a th:href="@{/books}"       class="btn btn-outline" style="justify-content:flex-start;"><i class="fa-solid fa-book"></i> Manage Books</a>
+                        <a th:href="@{/users}"        class="btn btn-outline" style="justify-content:flex-start;"><i class="fa-solid fa-users"></i> Manage Users</a>
+                        <a th:href="@{/fines}"        class="btn btn-outline" style="justify-content:flex-start;"><i class="fa-solid fa-indian-rupee-sign"></i> Fine Management</a>
+                        <a th:href="@{/categories}"  class="btn btn-outline" style="justify-content:flex-start;"><i class="fa-solid fa-tags"></i> Categories</a>
+                        <a th:href="@{/reports}"     class="btn btn-outline" style="justify-content:flex-start;"><i class="fa-solid fa-chart-column"></i> View Reports</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        function togglePassword(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye-slash','fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye','fa-eye-slash');
+            }
+        }
+    </script>
+</body>
+</html>

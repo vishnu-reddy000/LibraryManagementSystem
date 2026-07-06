@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #064e3b;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #d1fae5;
+            border-radius: 9px;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #f0fdf4;
+            color: #374151;
+        }
+        .form-group input:focus {
+            border-color: #10b981;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>LMS <span>User</span></h2>
+        </div>
+        <ul>
+            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
+            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
+            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
+            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
+            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
+            <li><a th:href="@{/user/settings}" class="active"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="mobile-topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <span class="logo-text">LMS <span>User</span></span>
+            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-dot" th:if="${notifCount > 0}"></span>
+            </a>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1>Settings</h1>
+                <h3>Manage your profile details and account security</h3>
+            </div>
+        </div>
+
+        <div class="content" style="margin-bottom: 24px;">
+            <div th:if="${success}" class="alert alert-success"><i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span></div>
+            <div th:if="${error}" class="alert alert-error"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
+
+            <h2>Update Profile Details</h2>
+            <form th:action="@{/user/settings/update-profile}" method="post" style="max-width: 500px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" th:value="${user.name}" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address (Cannot be changed)</label>
+                    <input type="email" th:value="${user.email}" disabled style="background:#e5e7eb; cursor:not-allowed;">
+                </div>
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
+            </form>
+        </div>
+
+        <div class="content">
+            <h2>Change Password</h2>
+            <form th:action="@{/user/settings/change-password}" method="post" style="max-width: 500px; margin-top: 15px;">
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" placeholder="Minimum 6 characters" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-type new password" required>
+                </div>
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-key"></i> Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
+        <a th:href="@{/user/settings}" class="active"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/user.js(v='2.1')}"></script>
+</body>
+</html>

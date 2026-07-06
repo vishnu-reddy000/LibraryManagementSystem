@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Books | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo"><i class="fa-solid fa-book-open"></i><h2>Book<span>Base</span></h2></div>
+        <ul>
+            <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/books}"><i class="fa-solid fa-book"></i> Books</a></li>
+            <li><a th:href="@{/users}"><i class="fa-solid fa-users"></i> Users</a></li>
+            <li><a th:href="@{/issue-books}" class="active"><i class="fa-solid fa-book-open-reader"></i> Issue Books</a></li>
+            <li><a th:href="@{/return-books}"><i class="fa-solid fa-rotate-left"></i> Return Books</a></li>
+            <li><a th:href="@{/reports}"><i class="fa-solid fa-chart-column"></i> Reports</a></li>
+            <li><a th:href="@{/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> Fine Management</a></li>
+            <li><a th:href="@{/categories}"><i class="fa-solid fa-tags"></i> Categories</a></li>
+            <li><a th:href="@{/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer"><a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+            <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search books, users..."></div>
+            <div class="topbar-right">
+                <div class="topbar-icon"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></div>
+                <div class="topbar-user"><div class="user-avatar">A</div><span class="user-name">Admin</span></div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="page-header"><div><h1>Issue Books</h1><p>Manage borrowing transactions</p></div></div>
+            <div class="content">
+                <div th:if="${success}" class="alert alert-success"><i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span></div>
+                <div th:if="${error}" class="alert alert-error"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
+                
+                <h2>Issue a Book</h2>
+                <div class="form-section">
+                    <form th:action="@{/issue-books}" method="post">
+                        <div class="form-row" style="display: flex; gap: 16px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Select Book *</label>
+                                <select name="bookId" required style="padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:14px;width:100%;background:#fff;color:#0f172a;">
+                                    <option value="">-- Choose a book --</option>
+                                    <option th:each="book : ${books}" th:value="${book.id}"
+                                            th:text="${book.title + ' (' + book.availableCopies + ' available)'}"
+                                            th:disabled="${book.availableCopies == 0}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Select User *</label>
+                                <select name="userId" required style="padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:14px;width:100%;background:#fff;color:#0f172a;">
+                                    <option value="">-- Choose a user --</option>
+                                    <option th:each="user : ${users}" th:value="${user.id}"
+                                            th:text="${user.name + ' (' + user.email + ')'}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Number of Days *</label>
+                                <input type="number" id="adminBorrowDays" value="14" min="1" max="365" required
+                                       style="padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:14px;width:100%;height:45px;background:#fff;color:#0f172a;box-sizing:border-box;">
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Due Date *</label>
+                                <input type="date" name="dueDate" id="adminDueDate" required 
+                                       th:value="${T(java.time.LocalDate).now().plusDays(14)}"
+                                       style="padding:10px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:14px;width:100%;height:45px;background:#fff;color:#0f172a;">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="fa-solid fa-book-open-reader"></i> Issue Book</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- User Borrow Requests -->
+            <div class="content" style="margin-bottom:20px;" th:if="${borrowRequests != null and !borrowRequests.isEmpty()}">
+                <h2>User Borrow Requests</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Book Title</th>
+                                <th>Member</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="req, stat : ${borrowRequests}">
+                                <td th:text="${stat.count}"></td>
+                                <td><strong th:text="${req.book.title}"></strong></td>
+                                <td th:text="${req.user.name + ' (' + req.user.email + ')'}"></td>
+                                <td th:text="${req.requestDate}"></td>
+                                <td><span class="badge badge-warning" th:text="${req.status}"></span></td>
+                                <td>
+                                    <form th:action="@{/issue-books/approve/{id}(id=${req.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-success btn-sm" style="padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px;"><i class="fa-solid fa-check"></i> Approve</button>
+                                    </form>
+                                    <button type="button" class="btn btn-danger btn-sm" style="padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px;" th:onclick="'showRejectConfirm(' + ${req.id} + ')'"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="content">
+                <h2>Currently Issued Books</h2>
+                <div class="table-wrapper">
+                    <table th:if="${issuedBooks != null and !issuedBooks.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Book Title</th>
+                                <th>Member</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Issued By</th>
+                                <th>Fine Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="issue, stat : ${issuedBooks}">
+                                <td th:text="${stat.count}"></td>
+                                <td><strong th:text="${issue.book.title}"></strong></td>
+                                <td th:text="${issue.member.name + ' (' + issue.member.email + ')'}"></td>
+                                <td th:text="${issue.issueDate}"></td>
+                                <td th:text="${issue.dueDate}"></td>
+                                <td th:text="${issue.issuedBy} ?: 'System'"></td>
+                                <td th:text="'₹' + ${#numbers.formatDecimal(issue.fineAmount ?: 0.0, 1, 2)}"></td>
+                                <td>
+                                    <span th:class="${issue.status.name() == 'OVERDUE'} ? 'badge badge-danger' : 'badge badge-warning'"
+                                          th:text="${issue.status}"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div th:if="${issuedBooks == null or issuedBooks.isEmpty()}" class="empty-state">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <p>No books currently issued.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;padding:28px;width:400px;max-width:90vw;text-align:center;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
+            <div style="width:56px;height:56px;background:#fee2e2;color:#ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f172a;font-family:sans-serif;">Reject Request</h3>
+            <p style="margin:0 0 24px;font-size:14px;color:#64748b;line-height:1.5;font-family:sans-serif;">Are you sure you want to reject this borrow request?</p>
+            <div style="display:flex;gap:12px;justify-content:center;">
+                <button class="btn btn-outline" onclick="closeConfirmModal()" style="margin:0;padding:10px 20px;font-size:14px;">Cancel</button>
+                <form id="confirmForm" action="" method="post" style="margin:0;">
+                    <button type="submit" class="btn btn-danger" style="margin:0;padding:10px 20px;font-size:14px;">Reject Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/admin.js(v='2.4')}"></script>
+    <script>
+        function showRejectConfirm(reqId) {
+            document.getElementById('confirmForm').action = '/issue-books/reject/' + reqId;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // Bidirectional Calculator for Admin Issue Form
+        document.addEventListener('DOMContentLoaded', function() {
+            const daysInput = document.getElementById('adminBorrowDays');
+            const dateInput = document.getElementById('adminDueDate');
+
+            function calculateDate() {
+                const days = parseInt(daysInput.value) || 0;
+                const today = new Date();
+                today.setDate(today.getDate() + days);
+                const yyyy = today.getFullYear();
+                let mm = today.getMonth() + 1;
+                let dd = today.getDate();
+                if (dd < 10) dd = '0' + dd;
+                if (mm < 10) mm = '0' + mm;
+                dateInput.value = yyyy + '-' + mm + '-' + dd;
+            }
+
+            function calculateDays() {
+                const selectedDate = new Date(dateInput.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+                const diffTime = selectedDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                daysInput.value = diffDays > 0 ? diffDays : 0;
+            }
+
+            if (daysInput && dateInput) {
+                daysInput.addEventListener('input', calculateDate);
+                dateInput.addEventListener('change', calculateDays);
+                // Initialize based on default value
+                calculateDate();
+            }
+        });
+    </script>
+</body>
+</html>

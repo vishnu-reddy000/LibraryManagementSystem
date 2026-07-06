@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Requests | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-book-open"></i>
+            <h2>LMS <span>User</span></h2>
+        </div>
+        <ul>
+            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
+            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
+            <li><a th:href="@{/user/requests}" class="active"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
+            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
+            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
+            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="mobile-topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <span class="logo-text">LMS <span>User</span></span>
+            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
+                <i class="fa-regular fa-bell"></i>
+                <span class="notif-dot" th:if="${notifCount > 0}"></span>
+            </a>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1>Book Requests</h1>
+                <h3>Track status of your requested books</h3>
+            </div>
+        </div>
+
+        <div class="content">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0fdf4;flex-wrap:wrap;gap:8px;">
+                <h2 style="margin:0;border:none;padding:0;">My Book Requests</h2>
+                <a th:href="@{/user/books}" class="btn btn-success btn-sm">
+                    <i class="fa-solid fa-search"></i> Request New Book
+                </a>
+            </div>
+            
+            <div class="table-wrapper">
+                <table th:if="${requests != null and !requests.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Book Title</th>
+                            <th>Author</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="req, stat : ${requests}">
+                            <td th:text="${stat.count}"></td>
+                            <td><strong th:text="${req.book.title}"></strong></td>
+                            <td th:text="${req.book.author}"></td>
+                            <td th:text="${req.requestDate}"></td>
+                            <td>
+                                <span th:class="${req.status == 'APPROVED' ? 'badge badge-success' :
+                                               (req.status == 'REJECTED' ? 'badge badge-danger' : 'badge badge-warning')}"
+                                      th:text="${req.status}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div th:if="${requests == null or requests.isEmpty()}" class="empty-state">
+                    <i class="fa-solid fa-paper-plane" style="color: #6ee7b7;"></i>
+                    <p>You have not submitted any book requests yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+        <a th:href="@{/user/requests}" class="active"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
+        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/user.js(v='2.1')}"></script>
+</body>
+</html>
