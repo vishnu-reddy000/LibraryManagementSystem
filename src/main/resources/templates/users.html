@@ -73,7 +73,6 @@
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>Role</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -91,7 +90,6 @@
                                     </a>
                                 </td>
                                 <td th:text="${user.email}"></td>
-                                <td><span th:class="${user.role.name() == 'ADMIN'} ? 'badge badge-danger' : 'badge badge-success'" th:text="${user.role}"></span></td>
                                 <td>
                                     <a href="#" th:data-url="@{/users/delete/{id}(id=${user.id})}" onclick="showConfirmModal(this)" class="btn btn-danger btn-sm">
                                         <i class="fa-solid fa-trash"></i>

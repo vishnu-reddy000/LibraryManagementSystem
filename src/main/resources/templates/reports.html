@@ -38,7 +38,7 @@
             <div class="page-header"><div><h1>Reports</h1><p>Library activity overview</p></div></div>
 
             <!-- Stat cards -->
-            <div class="dash-stats" style="grid-template-columns:repeat(5,1fr);">
+            <div class="dash-stats reports-stats">
                 <div class="stat-card"><div class="stat-icon si-green"><i class="fa-solid fa-book"></i></div><div class="stat-info"><h2 th:text="${totalBooks}">0</h2><p>Total Books</p></div></div>
                 <div class="stat-card"><div class="stat-icon si-orange"><i class="fa-solid fa-users"></i></div><div class="stat-info"><h2 th:text="${totalUsers}">0</h2><p>Registered Users</p></div></div>
                 <div class="stat-card"><div class="stat-icon si-blue"><i class="fa-solid fa-book-open"></i></div><div class="stat-info"><h2 th:text="${issuedBooks}">0</h2><p>Currently Issued</p></div></div>
@@ -47,7 +47,7 @@
             </div>
 
             <!-- Charts row -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div class="reports-charts">
                 <div class="content">
                     <h2>Books Issued Per Month</h2>
                     <canvas id="issuedChart" height="140"></canvas>

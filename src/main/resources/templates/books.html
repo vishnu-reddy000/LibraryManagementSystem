@@ -129,7 +129,7 @@
                 <div th:if="${error}" class="alert alert-error"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
                 
                 <!-- Toolbar (Search & View Mode Toggles) -->
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                <div class="toolbar-row">
                     <div class="search-bar" style="margin:0;flex:1;max-width:400px;">
                         <form th:action="@{/books}" method="get" style="display:flex;gap:8px;width:100%;">
                             <input type="text" name="search" placeholder="Search by title or author..." th:value="${search}" style="flex:1;">
@@ -137,7 +137,7 @@
                             <a th:if="${search}" th:href="@{/books}" class="btn btn-outline" style="white-space:nowrap;">Clear</a>
                         </form>
                     </div>
-                    <div style="display:flex;gap:8px;">
+                    <div class="view-toggles">
                         <button id="btnGridView" class="view-toggle-btn" onclick="setViewMode('grid')">
                             <i class="fa-solid fa-grip"></i> Grid
                         </button>
