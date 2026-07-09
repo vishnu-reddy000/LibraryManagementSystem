@@ -72,6 +72,13 @@ public class IssueService {
             throw new RuntimeException("You/User has already borrowed '" + book.getTitle() + "' and has not returned it yet.");
         }
 
+        // Check if the user has any unpaid fines
+        boolean hasUnpaidFines = fineRepository.findByIssuedBookMemberEmail(user.getEmail()).stream()
+                .anyMatch(f -> !f.isPaid() && !f.isWaived());
+        if (hasUnpaidFines) {
+            throw new RuntimeException("Borrowing blocked: You/User has outstanding unpaid fines. Please clear all fines first.");
+        }
+
         if (book.getAvailableCopies() <= 0) {
             throw new RuntimeException("No copies available for: " + book.getTitle());
         }

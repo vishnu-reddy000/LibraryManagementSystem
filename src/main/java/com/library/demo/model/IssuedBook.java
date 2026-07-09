@@ -34,6 +34,8 @@ public class IssuedBook {
 
     private Integer borrowDays = 0;    // how many days the user chose to borrow
 
+    private boolean rentPaid = false;
+
     private String issuedBy;
 
     private String returnedBy;
@@ -65,6 +67,8 @@ public class IssuedBook {
     public void setFineAmount(Double fineAmount) { this.fineAmount = fineAmount; }
     public void setRentalCost(Double rentalCost) { this.rentalCost = rentalCost; }
     public void setBorrowDays(Integer borrowDays) { this.borrowDays = borrowDays; }
+    public boolean isRentPaid() { return rentPaid; }
+    public void setRentPaid(boolean rentPaid) { this.rentPaid = rentPaid; }
     public void setIssuedBy(String issuedBy) { this.issuedBy = issuedBy; }
     public void setReturnedBy(String returnedBy) { this.returnedBy = returnedBy; }
 }

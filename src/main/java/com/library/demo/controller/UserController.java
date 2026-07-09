@@ -223,6 +223,13 @@ public class UserController {
             ra.addFlashAttribute("error", "User session not found.");
             return "redirect:/user/books";
         }
+        
+        boolean hasUnpaidFines = fineRepository.findByIssuedBookMemberEmail(email).stream()
+                .anyMatch(f -> !f.isPaid() && !f.isWaived());
+        if (hasUnpaidFines) {
+            ra.addFlashAttribute("error", "You cannot borrow books while you have unpaid fines. Please clear your outstanding fines first.");
+            return "redirect:/user/books";
+        }
         try {
             int days = (borrowDays != null && borrowDays > 0) ? borrowDays : 14;
             java.time.LocalDate due = null;
@@ -250,6 +257,13 @@ public class UserController {
             ra.addFlashAttribute("error", "User session not found.");
             return "redirect:/user/books";
         }
+        
+        boolean hasUnpaidFines = fineRepository.findByIssuedBookMemberEmail(email).stream()
+                .anyMatch(f -> !f.isPaid() && !f.isWaived());
+        if (hasUnpaidFines) {
+            ra.addFlashAttribute("error", "You cannot request books while you have unpaid fines. Please clear your outstanding fines first.");
+            return "redirect:/user/books";
+        }
         Book book = bookService.getBookById(id);
         
         boolean exists = borrowRequestRepository.findByUser(user).stream()
@@ -272,6 +286,10 @@ public class UserController {
         model.addAttribute("userName", email);
         model.addAttribute("notifCount", getNotificationCount(email));
         userRepository.findByEmail(email).ifPresent(user -> model.addAttribute("member", user));
+        
+        boolean hasUnpaidFines = fineRepository.findByIssuedBookMemberEmail(email).stream()
+                .anyMatch(f -> !f.isPaid() && !f.isWaived());
+        model.addAttribute("hasUnpaidFines", hasUnpaidFines);
     }
 
     private long getNotificationCount(String email) {

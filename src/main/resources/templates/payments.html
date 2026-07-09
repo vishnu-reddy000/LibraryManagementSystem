@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments Dashboard | LMS</title>
+    <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .payments-stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .payments-stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .payments-stat-card i {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 32px;
+            opacity: 0.15;
+            color: #10b981;
+        }
+        .payments-stat-card h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            color: #0f172a;
+        }
+        .payments-stat-card p {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="logo"><i class="fa-solid fa-book-open"></i><h2>Book<span>Base</span></h2></div>
+        <ul>
+            <li><a th:href="@{/admin}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+            <li><a th:href="@{/books}"><i class="fa-solid fa-book"></i> Books</a></li>
+            <li><a th:href="@{/users}"><i class="fa-solid fa-users"></i> Users</a></li>
+            <li><a th:href="@{/issue-books}"><i class="fa-solid fa-book-open-reader"></i> Issue Books</a></li>
+            <li><a th:href="@{/return-books}"><i class="fa-solid fa-rotate-left"></i> Return Books</a></li>
+            <li><a th:href="@{/reports}"><i class="fa-solid fa-chart-column"></i> Reports</a></li>
+            <li><a th:href="@{/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> Fine Management</a></li>
+            <li><a th:href="@{/payments}" class="active"><i class="fa-solid fa-credit-card"></i> Payments</a></li>
+            <li><a th:href="@{/categories}"><i class="fa-solid fa-tags"></i> Categories</a></li>
+            <li><a th:href="@{/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer"><a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+            <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search payments..."></div>
+            <div class="topbar-right">
+                <div class="topbar-icon"><i class="fa-regular fa-bell"></i><span class="notif-dot"></span></div>
+                <div class="topbar-user"><div class="user-avatar">A</div><span class="user-name">Admin</span></div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="page-header">
+                <div><h1>Payments Dashboard</h1><p>Monitor transactions for rentals and fines</p></div>
+            </div>
+            
+            <div class="payments-stat-cards">
+                <div class="payments-stat-card" style="border-top: 4px solid #10b981;">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h2 th:text="'₹' + ${#numbers.formatDecimal(totalCollected, 1, 2)}">₹0.00</h2>
+                    <p>Total Revenue</p>
+                </div>
+                <div class="payments-stat-card" style="border-top: 4px solid #3b82f6;">
+                    <i class="fa-solid fa-book"></i>
+                    <h2 th:text="'₹' + ${#numbers.formatDecimal(rentCollected, 1, 2)}">₹0.00</h2>
+                    <p>Rental Revenue</p>
+                </div>
+                <div class="payments-stat-card" style="border-top: 4px solid #f59e0b;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <h2 th:text="'₹' + ${#numbers.formatDecimal(finesCollected, 1, 2)}">₹0.00</h2>
+                    <p>Fine Revenue</p>
+                </div>
+                <div class="payments-stat-card" style="border-top: 4px solid #8b5cf6;">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <h2 th:text="${payments.size()}">0</h2>
+                    <p>Total Transactions</p>
+                </div>
+            </div>
+
+            <div class="content">
+                <h2 style="margin-bottom: 16px;">Transaction History</h2>
+                <div class="table-wrapper">
+                    <table th:if="${payments != null and !payments.isEmpty()}">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Date & Time</th>
+                                <th>Member Email</th>
+                                <th>Book Title</th>
+                                <th>Payment Type</th>
+                                <th>Payment Method</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="payment : ${payments}">
+                                <td th:text="'#TXN-' + ${payment.id}"></td>
+                                <td th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                <td><strong th:text="${payment.user.email}"></strong></td>
+                                <td><span th:text="${payment.issuedBook != null ? payment.issuedBook.book.title : 'N/A'}"></span></td>
+                                <td>
+                                    <span th:class="${payment.type == 'RENT' ? 'badge badge-success' : 'badge badge-warning'}" th:text="${payment.type}"></span>
+                                </td>
+                                <td><span class="badge" style="background:#f1f5f9;color:#334155;font-weight:600;" th:text="${payment.paymentMethod}"></span></td>
+                                <td>
+                                    <strong style="color:#10b981;" th:text="'₹' + ${#numbers.formatDecimal(payment.amount, 1, 2)}"></strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div th:if="${payments == null or payments.isEmpty()}" class="empty-state">
+                        <i class="fa-solid fa-credit-card" style="color:#6ee7b7;"></i>
+                        <p>No transactions recorded yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

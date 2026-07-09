@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/books/add", "/books/edit/**", "/books/delete/**").hasRole("ADMIN")
                 .requestMatchers("/users/delete/**", "/users/role/**").hasRole("ADMIN")
                 .requestMatchers("/issue-books/**", "/return-books/**", "/reports/**").hasRole("ADMIN")
-                .requestMatchers("/fines/**", "/categories/**", "/settings/**").hasRole("ADMIN")
+                .requestMatchers("/fines/**", "/categories/**", "/settings/**", "/payments/**", "/payments").hasRole("ADMIN")
 
                 // Shared: both roles can view books and users list
                 .requestMatchers("/books", "/users").hasAnyRole("ADMIN", "USER")
