@@ -41,7 +41,7 @@
                 <div th:if="${error}" class="alert alert-error"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
                 <h2>Pending Returns</h2>
                 <div class="table-wrapper">
-                    <table th:if="${issuedBooks != null and !issuedBooks.isEmpty()}">
+                    <table th:if="${issuedBooks != null and !issuedBooks.isEmpty()}" class="table-wide">
                         <thead>
                             <tr>
                                 <th>#</th>

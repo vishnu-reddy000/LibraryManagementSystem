@@ -281,8 +281,7 @@ tbody td { padding:13px 16px; color:#4a4050; vertical-align:middle; }
 /* ===== MOBILE (max 768px) ===== */
 @media (max-width:768px) {
     .topbar { padding:12px 16px; gap:10px; }
-    .topbar-search { max-width:100%; flex:1; }
-    .topbar-search input { font-size:13px; }
+    .topbar-search { display:none; }
     .user-name { display:none; }
 
     .page-content { padding:16px; }
@@ -298,15 +297,16 @@ tbody td { padding:13px 16px; color:#4a4050; vertical-align:middle; }
     .content h2 { font-size:14px; margin-bottom:14px; }
 
     .search-bar { flex-direction:column; align-items:stretch; }
-    .search-bar form { flex-wrap:wrap; gap:8px; }
-    .search-bar input { width:100%; flex:1; }
-    .search-bar .btn { flex:1; justify-content:center; }
+    .search-bar form { flex-direction:column; align-items:stretch; width:100%; gap:8px; }
+    .search-bar input { width:100%; }
+    .search-bar .btn { width:100%; justify-content:center; }
 
     .buttons { flex-direction:column; }
     .buttons .btn { width:100%; justify-content:center; }
 
     .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:8px; border:1px solid #e8e2d5; }
-    table { min-width:850px; }
+    table { width:100%; min-width:100%; }
+    .table-wide { min-width:850px; }
     thead th, tbody td { padding:10px 12px; font-size:12.5px; white-space:nowrap; }
 
     .form-section { max-width:100%; }

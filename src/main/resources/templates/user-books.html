@@ -155,7 +155,7 @@
                 </div>
             </div>
             <div id="booksList" class="table-wrapper" style="display:none;" th:if="${books != null and !books.isEmpty()}">
-                <table>
+                <table class="table-wide">
                     <thead><tr><th>#</th><th>Cover</th><th>Title</th><th>Author</th><th>Category</th><th>Availability</th><th>Action</th></tr></thead>
                     <tbody>
                         <tr th:each="book, stat : ${books}">

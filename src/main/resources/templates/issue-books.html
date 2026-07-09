@@ -82,7 +82,7 @@
             <div class="content" style="margin-bottom:20px;" th:if="${borrowRequests != null and !borrowRequests.isEmpty()}">
                 <h2>User Borrow Requests</h2>
                 <div class="table-wrapper">
-                    <table>
+                    <table class="table-wide">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -115,7 +115,7 @@
             <div class="content">
                 <h2>Currently Issued Books</h2>
                 <div class="table-wrapper">
-                    <table th:if="${issuedBooks != null and !issuedBooks.isEmpty()}">
+                    <table th:if="${issuedBooks != null and !issuedBooks.isEmpty()}" class="table-wide">
                         <thead>
                             <tr>
                                 <th>#</th>
