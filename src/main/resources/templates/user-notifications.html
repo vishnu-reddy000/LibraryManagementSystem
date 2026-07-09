@@ -37,6 +37,33 @@
             border-left-color: #10b981;
             background: #ecfdf5;
         }
+
+        .clear-all-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .clear-all-btn:hover {
+            background: #10b981;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .clear-all-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -79,10 +106,17 @@
             </a>
         </div>
 
-        <div class="header">
+        <div class="header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
             <div>
                 <h1>Notifications</h1>
                 <h3>View system alerts, borrow status updates, and warnings</h3>
+            </div>
+            <div th:if="${notifications != null and !notifications.isEmpty()}" class="header-actions">
+                <form th:action="@{/user/notifications/clear-all}" method="post" style="margin: 0;">
+                    <button type="submit" class="clear-all-btn">
+                        <i class="fa-solid fa-check-double"></i> Mark all read
+                    </button>
+                </form>
             </div>
         </div>
 

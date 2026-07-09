@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.library.demo.model.Fine;
+import com.library.demo.model.DismissedNotification;
 import com.library.demo.repository.FineRepository;
+import com.library.demo.repository.DismissedNotificationRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.library.demo.service.FineService;
 
@@ -51,6 +53,9 @@ public class UserController {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private DismissedNotificationRepository dismissedNotificationRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -270,32 +275,7 @@ public class UserController {
     }
 
     private long getNotificationCount(String email) {
-        long count = 0;
-        com.library.demo.model.User user = userRepository.findByEmail(email).orElse(null);
-        if (user != null) {
-            // 1. Overdue books
-            List<IssuedBook> activeIssues = issueService.getActiveIssuesByEmail(email);
-            for (IssuedBook issue : activeIssues) {
-                if (issue.getDueDate().isBefore(java.time.LocalDate.now())) {
-                    count++;
-                }
-            }
-            // 2. Unpaid fines
-            List<Fine> userFines = fineRepository.findByIssuedBookMemberEmail(email);
-            for (Fine fine : userFines) {
-                if (!fine.isPaid() && !fine.isWaived()) {
-                    count++;
-                }
-            }
-            // 3. Approved/Rejected borrow requests
-            List<BorrowRequest> requests = borrowRequestRepository.findByUser(user);
-            for (BorrowRequest req : requests) {
-                if ("APPROVED".equalsIgnoreCase(req.getStatus()) || "REJECTED".equalsIgnoreCase(req.getStatus())) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return getDashboardNotices(email).size();
     }
 
     @GetMapping("/user/requests")
@@ -340,15 +320,19 @@ public class UserController {
         // Add pending borrow requests as info notices (but not in dashboard to keep it cleaner)
         com.library.demo.model.User user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
+            List<String> dismissedKeys = dismissedNotificationRepository.findByUser(user).stream()
+                    .map(DismissedNotification::getNotificationKey)
+                    .collect(Collectors.toList());
             List<BorrowRequest> requests = borrowRequestRepository.findByUser(user);
             for (BorrowRequest req : requests) {
-                if ("PENDING".equalsIgnoreCase(req.getStatus())) {
+                String key = "borrow_" + req.getId();
+                if ("PENDING".equalsIgnoreCase(req.getStatus()) && !dismissedKeys.contains(key)) {
                     notices.add(new NotificationItem(
-                        req.getId(),
+                        key,
                         "ℹ️ PENDING: Your borrow request for '" + req.getBook().getTitle() + "' is pending approval.",
                         "info",
-                        false,
-                        null
+                        true,
+                        "/user/notifications/dismiss/" + key
                     ));
                 }
             }
@@ -359,16 +343,75 @@ public class UserController {
         return "user-notifications";
     }
 
-    @PostMapping("/user/notifications/dismiss/{id}")
-    public String dismissNotification(@PathVariable Long id, Authentication authentication, RedirectAttributes ra) {
+    @PostMapping("/user/notifications/dismiss/{key}")
+    public String dismissNotification(@PathVariable String key, Authentication authentication) {
         String email = authentication.getName();
         com.library.demo.model.User user = userRepository.findByEmail(email).orElse(null);
         if (user != null) {
-            borrowRequestRepository.findById(id).ifPresent(req -> {
-                if (req.getUser().getId().equals(user.getId())) {
-                    borrowRequestRepository.delete(req);
+            if (!dismissedNotificationRepository.existsByUserAndNotificationKey(user, key)) {
+                dismissedNotificationRepository.save(new DismissedNotification(user, key));
+            }
+            if (key.startsWith("borrow_")) {
+                try {
+                    Long id = Long.parseLong(key.substring(7));
+                    borrowRequestRepository.findById(id).ifPresent(req -> {
+                        if (req.getUser().getId().equals(user.getId())) {
+                            if ("APPROVED".equalsIgnoreCase(req.getStatus()) || "REJECTED".equalsIgnoreCase(req.getStatus())) {
+                                borrowRequestRepository.delete(req);
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    // Ignore parsing error
                 }
-            });
+            }
+        }
+        return "redirect:/user/notifications";
+    }
+
+    @PostMapping("/user/notifications/clear-all")
+    public String clearAllNotifications(Authentication authentication) {
+        String email = authentication.getName();
+        com.library.demo.model.User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null) {
+            List<NotificationItem> activeNotices = getDashboardNotices(email);
+            // Also fetch pending ones since they are shown on the notifications page
+            List<String> dismissedKeys = dismissedNotificationRepository.findByUser(user).stream()
+                    .map(DismissedNotification::getNotificationKey)
+                    .collect(Collectors.toList());
+            List<BorrowRequest> requests = borrowRequestRepository.findByUser(user);
+            for (BorrowRequest req : requests) {
+                String key = "borrow_" + req.getId();
+                if ("PENDING".equalsIgnoreCase(req.getStatus()) && !dismissedKeys.contains(key)) {
+                    activeNotices.add(new NotificationItem(
+                        key,
+                        "",
+                        "",
+                        true,
+                        ""
+                    ));
+                }
+            }
+
+            for (NotificationItem notif : activeNotices) {
+                if (!dismissedNotificationRepository.existsByUserAndNotificationKey(user, notif.getKey())) {
+                    dismissedNotificationRepository.save(new DismissedNotification(user, notif.getKey()));
+                }
+                if (notif.getKey().startsWith("borrow_")) {
+                    try {
+                        Long id = Long.parseLong(notif.getKey().substring(7));
+                        borrowRequestRepository.findById(id).ifPresent(req -> {
+                            if (req.getUser().getId().equals(user.getId())) {
+                                if ("APPROVED".equalsIgnoreCase(req.getStatus()) || "REJECTED".equalsIgnoreCase(req.getStatus())) {
+                                    borrowRequestRepository.delete(req);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+            }
         }
         return "redirect:/user/notifications";
     }
@@ -433,51 +476,61 @@ public class UserController {
         com.library.demo.model.User user = userRepository.findByEmail(email).orElse(null);
         List<NotificationItem> notices = new java.util.ArrayList<>();
         if (user != null) {
+            List<String> dismissedKeys = dismissedNotificationRepository.findByUser(user).stream()
+                    .map(DismissedNotification::getNotificationKey)
+                    .collect(Collectors.toList());
+
             // 1. Check for overdue books
             List<IssuedBook> activeIssues = issueService.getActiveIssuesByEmail(email);
             for (IssuedBook issue : activeIssues) {
-                if (issue.getDueDate().isBefore(java.time.LocalDate.now())) {
+                String key = "overdue_" + issue.getId();
+                if (issue.getDueDate().isBefore(java.time.LocalDate.now()) && !dismissedKeys.contains(key)) {
                     notices.add(new NotificationItem(
-                        issue.getId(),
+                        key,
                         "⚠️ OVERDUE WARNING: The book '" + issue.getBook().getTitle() + 
                         "' was due on " + issue.getDueDate() + ". Please return it immediately.",
                         "error",
-                        false,
-                        null
+                        true,
+                        "/user/notifications/dismiss/" + key
                     ));
                 }
             }
             // 2. Borrow requests
             List<BorrowRequest> requests = borrowRequestRepository.findByUser(user);
             for (BorrowRequest req : requests) {
+                String key = "borrow_" + req.getId();
+                if (dismissedKeys.contains(key)) {
+                    continue;
+                }
                 if ("APPROVED".equalsIgnoreCase(req.getStatus())) {
                     notices.add(new NotificationItem(
-                        req.getId(),
+                        key,
                         "✅ APPROVED: Your request for '" + req.getBook().getTitle() + "' has been approved!",
                         "success",
                         true,
-                        "/user/notifications/dismiss/" + req.getId()
+                        "/user/notifications/dismiss/" + key
                     ));
                 } else if ("REJECTED".equalsIgnoreCase(req.getStatus())) {
                     notices.add(new NotificationItem(
-                        req.getId(),
+                        key,
                         "❌ REJECTED: Your request for '" + req.getBook().getTitle() + "' was rejected.",
                         "error",
                         true,
-                        "/user/notifications/dismiss/" + req.getId()
+                        "/user/notifications/dismiss/" + key
                     ));
                 }
             }
             // 3. Unpaid fines
             List<Fine> userFines = fineRepository.findByIssuedBookMemberEmail(email);
             for (Fine fine : userFines) {
-                if (!fine.isPaid() && !fine.isWaived()) {
+                String key = "fine_" + fine.getId();
+                if (!fine.isPaid() && !fine.isWaived() && !dismissedKeys.contains(key)) {
                     notices.add(new NotificationItem(
-                        fine.getId(),
+                        key,
                         "💸 UNPAID FINE: You have an outstanding fine of ₹" + fine.getAmount() + " for '" + fine.getIssuedBook().getBook().getTitle() + "'.",
                         "warning",
-                        false,
-                        null
+                        true,
+                        "/user/notifications/dismiss/" + key
                     ));
                 }
             }
@@ -486,21 +539,21 @@ public class UserController {
     }
 
     public static class NotificationItem {
-        private Long id;
+        private String key;
         private String text;
         private String type; // error, success, warning, info
         private boolean dismissible;
         private String dismissUrl;
 
-        public NotificationItem(Long id, String text, String type, boolean dismissible, String dismissUrl) {
-            this.id = id;
+        public NotificationItem(String key, String text, String type, boolean dismissible, String dismissUrl) {
+            this.key = key;
             this.text = text;
             this.type = type;
             this.dismissible = dismissible;
             this.dismissUrl = dismissUrl;
         }
 
-        public Long getId() { return id; }
+        public String getKey() { return key; }
         public String getText() { return text; }
         public String getType() { return type; }
         public boolean isDismissible() { return dismissible; }
