@@ -2,6 +2,7 @@ package com.library.demo.config;
 
 import com.library.demo.security.CustomAuthSuccessHandler;
 import com.library.demo.security.CustomUserDetailsService;
+import com.library.demo.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -21,6 +23,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomAuthSuccessHandler successHandler;
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -47,8 +52,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                // Public pages & WebSockets
-                .requestMatchers("/login", "/signup", "/css/**", "/js/**", "/images/**", "/uploads/**", "/ws", "/ws/**", "/favicon.ico").permitAll()
+                // Public pages & WebSockets & Auth REST API
+                .requestMatchers("/login", "/signup", "/api/auth/**", "/css/**", "/js/**", "/images/**", "/uploads/**", "/ws", "/ws/**", "/favicon.ico").permitAll()
 
                 // Admin-only management routes (specific first)
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -84,7 +89,8 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/login?logout=true")
                 .deleteCookies("JSESSIONID", "remember-me")
                 .permitAll()
-            );
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
