@@ -10,6 +10,23 @@
 </head>
 <body>
 
+    <!-- Loading Screen Overlay -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-particles"></div>
+        <div class="loading-brand">
+            <img th:src="@{/images/logo.png}" alt="Logo" class="loading-logo">
+            <h1>Library<br><span>Management</span><br>System</h1>
+            <p class="loading-tagline">Your gateway to knowledge. Browse, borrow, and manage books seamlessly.</p>
+            <div class="loading-status-container">
+                <div class="loading-spinner-wrapper">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-spinner-inner"></div>
+                </div>
+                <span class="loading-text">Connecting to system...</span>
+            </div>
+        </div>
+    </div>
+
     <!-- LEFT: Branding panel -->
     <div class="left-panel">
         <!-- Floating decorative books -->
@@ -109,6 +126,27 @@
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
             }
         }
+
+        // Loading Screen Fade-out
+        window.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingText = document.querySelector('.loading-text');
+            
+            setTimeout(() => {
+                if (loadingText) {
+                    loadingText.textContent = "Entering portal...";
+                }
+            }, 800);
+            
+            setTimeout(() => {
+                if (loadingScreen) {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 800);
+                }
+            }, 1600);
+        });
     </script>
 
 </body>
