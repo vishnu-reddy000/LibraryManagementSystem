@@ -2,6 +2,8 @@ package com.library.demo.controller;
 
 import com.library.demo.model.User;
 import com.library.demo.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,9 +20,18 @@ public class AuthController {
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
                             @RequestParam(required = false) String logout,
+                            HttpServletRequest request,
                             Model model) {
         if (error != null) {
-            model.addAttribute("error", "Invalid email or password.");
+            HttpSession session = request.getSession(false);
+            String errorMessage = "Invalid email or password.";
+            if (session != null) {
+                Exception ex = (Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+                if (ex != null && ex.getMessage() != null && !ex.getMessage().trim().isEmpty()) {
+                    errorMessage = ex.getMessage();
+                }
+            }
+            model.addAttribute("error", errorMessage);
         }
         if (logout != null) {
             model.addAttribute("message", "You have been logged out.");

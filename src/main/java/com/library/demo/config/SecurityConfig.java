@@ -3,6 +3,7 @@ package com.library.demo.config;
 import com.library.demo.security.CustomAuthSuccessHandler;
 import com.library.demo.security.CustomUserDetailsService;
 import com.library.demo.security.JwtAuthenticationFilter;
+import com.library.demo.security.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,9 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -78,6 +82,14 @@ public class SecurityConfig {
                 .successHandler(successHandler)
                 .failureUrl("/login?error=true")
                 .permitAll()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/login")
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
+                .successHandler(successHandler)
+                .failureUrl("/login?error=true")
             )
             .rememberMe(remember -> remember
                 .key("lmsSecretKey123")

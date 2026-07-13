@@ -3,6 +3,7 @@ package com.library.demo.security;
 import com.library.demo.model.User;
 import com.library.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with email: " + email));
+
+        if (user.getRole() == User.Role.ADMIN) {
+            throw new DisabledException("Admins are restricted to log in via Google OAuth only.");
+        }
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
