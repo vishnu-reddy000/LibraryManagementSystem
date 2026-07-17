@@ -1,21 +1,53 @@
+/* ═══════════════════════════════════════
+   USER SYSTEM — Interactive JS
+   ═══════════════════════════════════════ */
+
+// ── Sidebar toggle (mobile) ──
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
+    const sidebar = document.getElementById('dbSidebar');
+    const overlay = document.getElementById('dbOverlay');
+    const hamburger = document.getElementById('dbHamburger');
     if (!sidebar || !overlay) return;
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('active');
-    document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+    
+    const isOpen = sidebar.classList.toggle('open');
+    overlay.classList.toggle('active', isOpen);
+    if (hamburger) {
+        hamburger.setAttribute('aria-expanded', isOpen);
+    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+// ── Sidebar size toggle (desktop full-size vs logos only) ──
+function toggleSidebarSize(event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    const sidebar = document.getElementById('dbSidebar');
+    if (!sidebar) return;
+    const isExpanded = sidebar.classList.toggle('expanded');
+    localStorage.setItem('sidebarExpanded', isExpanded ? 'true' : 'false');
 }
 
 function initializeUserPage() {
-    document.querySelectorAll('.sidebar ul li a').forEach(function (link) {
+    // Restore sidebar state from localStorage immediately
+    const sidebar = document.getElementById('dbSidebar');
+    if (sidebar) {
+        const isExpanded = localStorage.getItem('sidebarExpanded') === 'true';
+        sidebar.classList.toggle('expanded', isExpanded);
+    }
+
+    // Close sidebar when clicking any navigation link on mobile
+    document.querySelectorAll('.db-sidebar .db-nav-item').forEach(function (link) {
         link.addEventListener('click', function () {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('open')) toggleSidebar();
+            const sidebar = document.getElementById('dbSidebar');
+            if (sidebar && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
         });
     });
 
-    // Fetch user details and start WebSocket
+    // Fetch user details and start WebSocket connection
     fetch('/user/current-email')
         .then(response => response.json())
         .then(data => {
@@ -23,7 +55,7 @@ function initializeUserPage() {
                 initUserWebSocket(data.email);
             }
         })
-        .catch(err => console.error("Could not fetch user details for WS: ", err));
+        .catch(err => console.error("Could not fetch user email for WS initialization: ", err));
 }
 
 if (document.readyState === 'loading') {
@@ -32,7 +64,7 @@ if (document.readyState === 'loading') {
     initializeUserPage();
 }
 
-// Load SockJS & STOMP from local files dynamically
+// Dynamically load SockJS & STOMP scripts if not already present
 function loadWebSocketClient(callback) {
     if (window.SockJS && window.Stomp) {
         callback();
@@ -84,7 +116,7 @@ function initUserWebSocket(userEmail) {
     loadWebSocketClient(() => {
         const socket = new SockJS('/ws');
         const stompClient = Stomp.over(socket);
-        stompClient.debug = console.log; // Enable console logs for debugging connection state
+        stompClient.debug = console.log; // Console logging for connection debugging
         stompClient.connect({}, function (frame) {
             console.log("User WebSocket connected successfully: " + frame);
             stompClient.subscribe('/topic/notifications-' + userEmail, function (messageOutput) {
@@ -92,25 +124,20 @@ function initUserWebSocket(userEmail) {
                 if (data && data.message) {
                     showToast(data.message, data.type || 'info');
                     
-                    // 1. Update the notification badge counts in navbar
-                    const badgeElements = document.querySelectorAll('.badge-danger, .notif-dot');
+                    // 1. Update the notification badge counts in topbar/mobile bars
+                    const badgeElements = document.querySelectorAll('.db-notif-badge');
                     badgeElements.forEach(badge => {
-                        if (badge.classList.contains('notif-dot')) {
-                            badge.style.display = 'block';
-                        } else {
-                            let count = parseInt(badge.textContent) || 0;
-                            badge.textContent = count + 1;
-                            badge.style.display = 'inline-block';
-                        }
+                        let count = parseInt(badge.textContent) || 0;
+                        badge.textContent = count + 1;
+                        badge.style.display = 'flex';
                     });
 
-                    // 2. If viewing notification list, insert the notice dynamically at the top
-                    const notifContent = document.querySelector('.main .content');
+                    // 2. If currently viewing the notification list page, dynamically prepend the alert card
+                    const notifContent = document.querySelector('.db-content .content');
                     if (window.location.pathname.includes('/user/notifications') && notifContent) {
-                        const emptyState = document.querySelector('.empty-state');
+                        const emptyState = notifContent.querySelector('.empty-state');
                         if (emptyState) emptyState.remove();
 
-                        // Get or create container for notices
                         let listContainer = notifContent.querySelector('div');
                         if (!listContainer) {
                             listContainer = document.createElement('div');
@@ -138,3 +165,23 @@ function initUserWebSocket(userEmail) {
         });
     });
 }
+
+// Close sidebar on outside clicks
+document.addEventListener('click', function (e) {
+    const sidebar = document.getElementById('dbSidebar');
+    const hamburger = document.getElementById('dbHamburger');
+    if (!sidebar || !sidebar.classList.contains('open')) return;
+    if (!sidebar.contains(e.target) && (!hamburger || !hamburger.contains(e.target))) {
+        toggleSidebar();
+    }
+});
+
+// Close sidebar on Escape key press
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        const sidebar = document.getElementById('dbSidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
+    }
+});

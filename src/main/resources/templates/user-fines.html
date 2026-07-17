@@ -5,141 +5,216 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Fines | LMS</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
-    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
 </head>
-<body>
+<body class="dashboard-body">
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- App Window Wrapper -->
+    <div class="db-window">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo">
-            <i class="fa-solid fa-book-open"></i>
-            <h2>LMS <span>User</span></h2>
-        </div>
-        <ul>
-            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
-            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
-            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
-            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
-            <li><a th:href="@{/user/fines}" class="active"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
-            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
-            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>
-        </div>
-    </div>
+        <!-- ── Sidebar Overlay (mobile) ── -->
+        <div class="db-overlay" id="dbOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- MAIN -->
-    <div class="main">
-
-        <div class="mobile-topbar">
-            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
-                <span></span><span></span><span></span>
-            </button>
-            <span class="logo-text">LMS <span>User</span></span>
-            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
-                <i class="fa-regular fa-bell"></i>
-                <span class="notif-dot" th:if="${notifCount > 0}"></span>
-            </a>
-        </div>
-
-        <div class="header">
-            <div>
-                <h1>My Fines</h1>
-                <h3>View and track your outstanding and paid fines</h3>
+        <!-- ══════════════════════════════
+             LEFT ICON SIDEBAR
+        ══════════════════════════════ -->
+        <aside class="db-sidebar" id="dbSidebar">
+            <!-- Sidebar Header / Toggle -->
+            <div class="db-sidebar-header">
+                <div class="db-logo-container" onclick="location.href='/user'">
+                    <div class="db-logo">
+                        <img th:src="@{/images/logo.png}" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="db-logo-fallback" style="display:none;"><i class="fa-solid fa-book-open-reader"></i></span>
+                    </div>
+                    <span class="db-logo-text">LMS <span>User</span></span>
+                </div>
+                <button class="db-sidebar-toggle-btn" id="dbSidebarToggle" onclick="toggleSidebarSize(event)" aria-label="Toggle Sidebar Size">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
-        </div>
 
-        <!-- STAT CARDS -->
-        <div class="cards" style="margin-bottom: 24px;">
-            <div class="card" style="border-top-color:#dc2626; border-color:#fca5a5;">
-                <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i>
-                <h2 th:text="'₹' + ${totalUnpaid}">₹0.0</h2>
-                <p>Outstanding Fines</p>
+            <!-- Nav icons -->
+            <nav class="db-nav">
+                <a th:href="@{/user}" class="db-nav-item" data-tip="Dashboard">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="db-nav-text">Dashboard</span>
+                </a>
+                <a th:href="@{/user/books}" class="db-nav-item" data-tip="Browse Books">
+                    <i class="fa-solid fa-book"></i>
+                    <span class="db-nav-text">Browse Books</span>
+                </a>
+                <a th:href="@{/user/my-books}" class="db-nav-item" data-tip="My Books">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <span class="db-nav-text">My Books</span>
+                </a>
+                <a th:href="@{/user/requests}" class="db-nav-item" data-tip="Requests">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="db-nav-text">Requests</span>
+                </a>
+                <a th:href="@{/user/fines}" class="db-nav-item active" data-tip="Fines">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <span class="db-nav-text">Fines</span>
+                </a>
+            </nav>
+
+            <!-- Bottom icons -->
+            <div class="db-nav-bottom">
+                <a th:href="@{/user/settings}" class="db-nav-item" data-tip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span class="db-nav-text">Settings</span>
+                </a>
+                <a th:href="@{/logout}" class="db-nav-item db-logout" data-tip="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="db-nav-text">Logout</span>
+                </a>
             </div>
-            <div class="card" style="border-top-color:#16a34a; border-color:#a7f3d0;">
-                <i class="fa-solid fa-circle-check" style="color:#16a34a;"></i>
-                <h2 th:text="'₹' + ${totalPaid}">₹0.0</h2>
-                <p>Total Paid Fines</p>
-            </div>
-        </div>
+        </aside>
 
-        <div class="content">
-            <div th:if="${success}" class="alert-success" style="background:#e6fffa;color:#047857;border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;"><i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span></div>
-            <div th:if="${error}" class="alert-error" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
+        <!-- ══════════════════════════════
+             MAIN CONTENT
+        ══════════════════════════════ -->
+        <main class="db-main" id="dbMain">
 
-            <h2 style="margin-bottom: 16px;">Fine History</h2>
-            
-            <div class="table-wrapper">
-                <table th:if="${fines != null and !fines.isEmpty()}" class="table-wide">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Book Title</th>
-                            <th>Amount</th>
-                            <th>Fine Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="fine, stat : ${fines}">
-                            <td th:text="${stat.count}"></td>
-                            <td><strong th:text="${fine.issuedBook.book.title}"></strong></td>
-                            <td th:text="'₹' + ${fine.amount}"></td>
-                            <td th:text="${fine.createdDate}"></td>
-                            <td>
-                                <span th:if="${fine.paid}" class="badge badge-success">PAID</span>
-                                <span th:if="${fine.waived}" class="badge badge-info">WAIVED</span>
-                                <span th:if="${!fine.paid and !fine.waived}" class="badge badge-danger">UNPAID</span>
-                            </td>
-                            <td>
-                                <button th:if="${!fine.paid and !fine.waived}" type="button" class="btn btn-success btn-sm" style="background:#10b981;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;" th:onclick="'showPaymentModal(' + ${fine.id} + ', \'FINE\', ' + ${fine.amount} + ')'"><i class="fa-solid fa-credit-card"></i> Pay Fine</button>
-                                <span th:if="${fine.paid or fine.waived}" style="color:#94a3b8;font-size:12px;">—</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div th:if="${fines == null or fines.isEmpty()}" class="empty-state">
-                    <i class="fa-solid fa-indian-rupee-sign" style="color:#6ee7b7;"></i>
-                    <p>No fines incurred. You have a perfect record! 👍</p>
+            <!-- ── Mobile Top Bar ── -->
+            <header class="db-mobile-header">
+                <button class="db-hamburger" id="dbHamburger" onclick="toggleSidebar()" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <span class="db-mobile-logo">Book<span>Base</span></span>
+                <div class="db-mobile-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-avatar-sm" th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</div>
+                </div>
+            </header>
+
+            <!-- ── Desktop Top Bar ── -->
+            <header class="db-topbar">
+                <!-- Search -->
+                <form class="db-search" th:action="@{/user/books}" method="get">
+                    <i class="fa-solid fa-magnifying-glass db-search-icon"></i>
+                    <input type="text" name="search" placeholder="Search book name, author, edition ...">
+                </form>
+
+                <!-- Right side -->
+                <div class="db-topbar-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-user-chip">
+                        <div class="db-avatar">
+                            <span th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</span>
+                        </div>
+                        <span class="db-username" th:text="${member?.name != null ? member.name : userName}">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ── Page Content ── -->
+            <div class="db-content">
+                <!-- Page Header -->
+                <div class="db-page-header">
+                    <h1>My Fines</h1>
+                    <h3>View and track your outstanding and paid fines</h3>
+                </div>
+
+                <!-- STAT CARDS -->
+                <div class="cards" style="margin-bottom: 24px;">
+                    <div class="card" style="border-top: 4px solid #c62828;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color:#c62828;"></i>
+                        <h2 th:text="'₹' + ${totalUnpaid}">₹0.0</h2>
+                        <p>Outstanding Fines</p>
+                    </div>
+                    <div class="card" style="border-top: 4px solid #2e7d32;">
+                        <i class="fa-solid fa-circle-check" style="color:#2e7d32;"></i>
+                        <h2 th:text="'₹' + ${totalPaid}">₹0.0</h2>
+                        <p>Total Paid Fines</p>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <div th:if="${success}" class="alert-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span th:text="${success}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <h2 style="margin-bottom: 16px;">Fine History</h2>
+                    
+                    <div class="table-wrapper">
+                        <table th:if="${fines != null and !fines.isEmpty()}" class="table-wide">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Book Title</th>
+                                    <th>Amount</th>
+                                    <th>Fine Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="fine, stat : ${fines}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td><strong th:text="${fine.issuedBook.book.title}"></strong></td>
+                                    <td th:text="'₹' + ${fine.amount}"></td>
+                                    <td th:text="${fine.createdDate}"></td>
+                                    <td>
+                                        <span th:if="${fine.paid}" class="badge badge-success">PAID</span>
+                                        <span th:if="${fine.waived}" class="badge badge-info">WAIVED</span>
+                                        <span th:if="${!fine.paid and !fine.waived}" class="badge badge-danger">UNPAID</span>
+                                    </td>
+                                    <td>
+                                        <button th:if="${!fine.paid and !fine.waived}" type="button" class="btn btn-success btn-sm" th:onclick="'showPaymentModal(' + ${fine.id} + ', \'FINE\', ' + ${fine.amount} + ')'"><i class="fa-solid fa-credit-card"></i> Pay Fine</button>
+                                        <span th:if="${fine.paid or fine.waived}" style="color:#9ca3af;font-size:12.5px;">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:if="${fines == null or fines.isEmpty()}" class="empty-state">
+                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                            <p>No fines incurred. You have a perfect record! 👍</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+        </main>
+
+        <!-- ── Mobile Bottom Nav ── -->
+        <nav class="db-bottom-nav">
+            <a th:href="@{/user}" class="db-bnav"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a th:href="@{/user/books}" class="db-bnav"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+            <a th:href="@{/user/my-books}" class="db-bnav"><i class="fa-solid fa-book-open-reader"></i><span>My Books</span></a>
+            <a th:href="@{/user/requests}" class="db-bnav"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+            <a th:href="@{/user/settings}" class="db-bnav active"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
+
     </div>
 
-    <!-- Bottom Nav -->
-    <nav class="bottom-nav">
-        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
-        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
-        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
-        <a th:href="@{/user/fines}" class="active"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
-        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    </nav>
-
-    <script th:src="@{/js/sockjs.min.js}"></script>
-    <script th:src="@{/js/stomp.min.js}"></script>
-    <script th:src="@{/js/user.js(v='2.1')}"></script>
-
     <!-- Reusable Payment Modal -->
-    <div id="paymentModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;font-family:sans-serif;">
-        <div style="background:#fff;border-radius:16px;padding:28px;width:400px;max-width:90vw;text-align:left;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);position:relative;">
+    <div id="paymentModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;">
+        <div class="modal-content" style="position:relative;">
             <button onclick="closePaymentModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;"><i class="fa-solid fa-xmark"></i></button>
-            <div style="width:56px;height:56px;background:#ecfdf5;color:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
+            <div style="width:52px;height:52px;background:#e8f5e9;color:#2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
                 <i class="fa-solid fa-credit-card"></i>
             </div>
-            <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f172a;text-align:center;">Secure Payment</h3>
-            <p style="margin:0 0 20px;font-size:14px;color:#64748b;text-align:center;">You are paying <strong id="paymentAmountDisplay" style="color:#0f172a;">₹0.00</strong> for <span id="paymentTypeDisplay"></span>.</p>
+            <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;color:#1a1a1a;text-align:center;">Secure Payment</h3>
+            <p style="margin:0 0 20px;font-size:13px;color:#5b6470;text-align:center;">You are paying <strong id="paymentAmountDisplay" style="color:#1a1a1a;">₹0.00</strong> for <span id="paymentTypeDisplay"></span>.</p>
             
             <form id="paymentForm" action="" method="post" style="margin:0;">
                 <div style="margin-bottom:20px;">
-                    <label style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:8px;">Select Payment Method</label>
-                    <select name="paymentMethod" required style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#fff;outline:none;">
+                    <label style="display:block;font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:8px;">Select Payment Method</label>
+                    <select name="paymentMethod" required style="width:100%;padding:10px 12px;border:1px solid #e8e6df;border-radius:8px;font-size:13.5px;color:#1a1a1a;background:#fff;outline:none;">
                         <option value="UPI">UPI (Google Pay, PhonePe, Paytm)</option>
                         <option value="CARD">Credit / Debit Card</option>
                         <option value="NET_BANKING">Net Banking</option>
@@ -147,13 +222,16 @@
                     </select>
                 </div>
                 <div style="display:flex;gap:12px;justify-content:flex-end;">
-                    <button type="button" class="btn btn-outline" onclick="closePaymentModal()" style="margin:0;padding:10px 16px;font-size:14px;border:1px solid #cbd5e1;border-radius:8px;background:none;cursor:pointer;">Cancel</button>
-                    <button type="submit" class="btn btn-success" style="margin:0;padding:10px 20px;font-size:14px;background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:600;border-radius:8px;box-shadow:0 2px 4px rgba(16,185,129,0.2);">Pay Now</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closePaymentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm">Pay Now</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script th:src="@{/js/sockjs.min.js}"></script>
+    <script th:src="@{/js/stomp.min.js}"></script>
+    <script th:src="@{/js/user.js(v='2.2')}"></script>
     <script>
         function showPaymentModal(id, type, amount) {
             const form = document.getElementById('paymentForm');

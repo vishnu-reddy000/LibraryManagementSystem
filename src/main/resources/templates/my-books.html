@@ -1,163 +1,282 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Borrowed Books | LMS</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
-    <link class="style" rel="stylesheet" th:href="@{/css/user.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
 </head>
-<body>
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="logo"><i class="fa-solid fa-book-open"></i><h2>LMS <span>User</span></h2></div>
-        <ul>
-            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
-            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
-            <li><a th:href="@{/user/my-books}" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Book History</a></li>
-            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
-            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
-            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification<span th:if="${notifCount > 0}" class="badge badge-danger" th:text="${notifCount}"></span></a></li>
-            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer"><a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
-    </div>
-    <div class="main">
-        <!-- Mobile Topbar -->
-        <div class="mobile-topbar">
-            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
-                <span></span><span></span><span></span>
-            </button>
-            <span class="logo-text">LMS <span>User</span></span>
-            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
-                <i class="fa-regular fa-bell"></i>
-                <span class="notif-dot" th:if="${notifCount > 0}"></span>
-            </a>
-        </div>
+<body class="dashboard-body">
 
-        <!-- Desktop Header -->
-        <div class="header">
-            <div>
-                <h1>Book History</h1>
-                <h3>Your complete borrowing history</h3>
-            </div>
-        </div>
+    <!-- App Window Wrapper -->
+    <div class="db-window">
 
-        <div class="content">
-            <div th:if="${success}" class="alert-success" style="background:#e6fffa;color:#047857;border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;"><i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span></div>
-            <div th:if="${error}" class="alert-error" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;"><i class="fa-solid fa-circle-exclamation"></i> <span th:text="${error}"></span></div>
-            
-            <!-- Status counters / info pills -->
-            <div class="stat-pills" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-                <span class="pill-total" style="background:#f1f5f9;color:#334155;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-list-ul"></i> Total: <strong th:text="${allIssues.size()}">0</strong></span>
-                <span class="pill-issued" style="background:#fffbeb;color:#b45309;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-clock"></i> Issued: <strong th:text="${activeCount}">0</strong></span>
-                <span class="pill-returned" style="background:#ecfdf5;color:#047857;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-check"></i> Returned: <strong th:text="${returnedCount}">0</strong></span>
-                <span class="pill-overdue" style="background:#fef2f2;color:#b91c1c;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-exclamation"></i> Overdue: <strong th:text="${overdueCount}">0</strong></span>
+        <!-- ── Sidebar Overlay (mobile) ── -->
+        <div class="db-overlay" id="dbOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- ══════════════════════════════
+             LEFT ICON SIDEBAR
+        ══════════════════════════════ -->
+        <aside class="db-sidebar" id="dbSidebar">
+            <!-- Sidebar Header / Toggle -->
+            <div class="db-sidebar-header">
+                <div class="db-logo-container" onclick="location.href='/user'">
+                    <div class="db-logo">
+                        <img th:src="@{/images/logo.png}" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="db-logo-fallback" style="display:none;"><i class="fa-solid fa-book-open-reader"></i></span>
+                    </div>
+                    <span class="db-logo-text">LMS <span>User</span></span>
+                </div>
+                <button class="db-sidebar-toggle-btn" id="dbSidebarToggle" onclick="toggleSidebarSize(event)" aria-label="Toggle Sidebar Size">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
 
-            <!-- Tabs -->
-            <div class="tabs" style="display:flex;gap:10px;margin-bottom:20px;border-bottom:1px solid #e2e8f0;padding-bottom:10px;">
-                <a th:href="@{/user/my-books}" th:class="${filter == null or filter == 'all'} ? 'tab-btn active' : 'tab-btn'" style="padding:8px 16px;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-border-all"></i> All</a>
-                <a th:href="@{/user/my-books(filter='issued')}" th:class="${filter == 'issued'} ? 'tab-btn active' : 'tab-btn'" style="padding:8px 16px;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-clock"></i> Issued</a>
-                <a th:href="@{/user/my-books(filter='returned')}" th:class="${filter == 'returned'} ? 'tab-btn active' : 'tab-btn'" style="padding:8px 16px;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-check"></i> Returned</a>
-                <a th:href="@{/user/my-books(filter='overdue')}" th:class="${filter == 'overdue'} ? 'tab-btn active' : 'tab-btn'" style="padding:8px 16px;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;color:#64748b;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-triangle-exclamation"></i> Overdue</a>
-            </div>
-
-            <!-- Table -->
-            <div class="table-wrapper">
-                <table th:if="${displayIssues != null and !displayIssues.isEmpty()}" class="table-wide">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Book Title</th>
-                            <th>Author</th>
-                            <th>Category</th>
-                            <th>Issue Date</th>
-                            <th>Due Date</th>
-                            <th>Return Date</th>
-                            <th>Days</th>
-                            <th>Rental Cost</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="issue, stat : ${displayIssues}">
-                            <td th:text="${stat.count}"></td>
-                            <td><strong th:text="${issue.book.title}"></strong></td>
-                            <td th:text="${issue.book.author}"></td>
-                            <td><span class="badge" th:style="'font-size:11px;padding:3px 8px;border-radius:6px;background:' + (${categoryColors[#strings.toLowerCase(issue.book.category)]} ?: '#64748b') + '22;color:' + (${categoryColors[#strings.toLowerCase(issue.book.category)]} ?: '#64748b') + ';'" th:text="${issue.book.category} ?: 'General'"></span></td>
-                            <td th:text="${issue.issueDate}"></td>
-                            <td>
-                                <span th:if="${issue.status.name() == 'ISSUED'}"
-                                      th:class="${issue.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'badge badge-danger' : 'badge badge-warning'"
-                                      th:text="${issue.dueDate}"></span>
-                                <span th:if="${issue.status.name() != 'ISSUED'}" th:text="${issue.dueDate}"></span>
-                            </td>
-                            <td th:text="${issue.returnDate} ?: '-'"></td>
-                            <td th:text="${issue.borrowDays} ?: '-'"></td>
-                            <td>
-                                <div th:if="${issue.rentalCost != null and issue.rentalCost > 0}">
-                                    <span style="font-weight:700;color:#059669;display:block;" th:text="'₹' + ${#numbers.formatDecimal(issue.rentalCost, 1, 2)}"></span>
-                                    <span th:if="${issue.rentPaid}" class="badge badge-success" style="font-size:10px;padding:2px 5px;margin-top:4px;display:inline-block;">PAID</span>
-                                    <button th:if="${!issue.rentPaid}" type="button" class="btn btn-success btn-sm" style="background:#10b981;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;margin-top:4px;display:inline-flex;align-items:center;gap:4px;" th:onclick="'showPaymentModal(' + ${issue.id} + ', \'RENT\', ' + ${issue.rentalCost} + ')'"><i class="fa-solid fa-credit-card"></i> Pay Rent</button>
-                                </div>
-                                <span th:if="${issue.rentalCost == null or issue.rentalCost == 0}" style="color:#94a3b8;font-size:12px;">Free</span>
-                            </td>
-                            <td>
-                                <span th:class="${issue.status.name() == 'RETURNED'} ? 'badge badge-success' :
-                                               (${issue.status.name() == 'OVERDUE'} ? 'badge badge-danger' : 'badge badge-warning')"
-                                      th:text="${issue.status}"></span>
-                            </td>
-                            <td>
-                                <!-- Return Book button (Self-Service Return) -->
-                                <button th:if="${issue.status.name() == 'ISSUED' or issue.status.name() == 'OVERDUE'}" 
-                                        type="button" class="btn btn-warning btn-sm" style="background:#f59e0b;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;" th:onclick="'showReturnModal(' + ${issue.id} + ')'"><i class="fa-solid fa-rotate-left"></i> Return</button>
-                                <span th:if="${issue.status.name() == 'RETURNED'}" style="color:#94a3b8;font-size:12px;">—</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div th:if="${displayIssues == null or displayIssues.isEmpty()}" class="empty-state">
+            <!-- Nav icons -->
+            <nav class="db-nav">
+                <a th:href="@{/user}" class="db-nav-item" data-tip="Dashboard">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="db-nav-text">Dashboard</span>
+                </a>
+                <a th:href="@{/user/books}" class="db-nav-item" data-tip="Browse Books">
+                    <i class="fa-solid fa-book"></i>
+                    <span class="db-nav-text">Browse Books</span>
+                </a>
+                <a th:href="@{/user/my-books}" class="db-nav-item active" data-tip="My Books">
                     <i class="fa-solid fa-book-open-reader"></i>
-                    <p th:if="${filter == null or filter == 'all'}">You haven't borrowed any books yet.</p>
-                    <p th:if="${filter == 'issued'}">No books currently issued.</p>
-                    <p th:if="${filter == 'returned'}">No returned books yet.</p>
-                    <p th:if="${filter == 'overdue'}">No overdue books. Great job!</p>
+                    <span class="db-nav-text">My Books</span>
+                </a>
+                <a th:href="@{/user/requests}" class="db-nav-item" data-tip="Requests">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="db-nav-text">Requests</span>
+                </a>
+                <a th:href="@{/user/fines}" class="db-nav-item" data-tip="Fines">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <span class="db-nav-text">Fines</span>
+                </a>
+            </nav>
+
+            <!-- Bottom icons -->
+            <div class="db-nav-bottom">
+                <a th:href="@{/user/settings}" class="db-nav-item" data-tip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span class="db-nav-text">Settings</span>
+                </a>
+                <a th:href="@{/logout}" class="db-nav-item db-logout" data-tip="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="db-nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ══════════════════════════════
+             MAIN CONTENT
+        ══════════════════════════════ -->
+        <main class="db-main" id="dbMain">
+
+            <!-- ── Mobile Top Bar ── -->
+            <header class="db-mobile-header">
+                <button class="db-hamburger" id="dbHamburger" onclick="toggleSidebar()" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <span class="db-mobile-logo">Book<span>Base</span></span>
+                <div class="db-mobile-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-avatar-sm" th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</div>
+                </div>
+            </header>
+
+            <!-- ── Desktop Top Bar ── -->
+            <header class="db-topbar">
+                <!-- Search -->
+                <form class="db-search" th:action="@{/user/books}" method="get">
+                    <i class="fa-solid fa-magnifying-glass db-search-icon"></i>
+                    <input type="text" name="search" placeholder="Search book name, author, edition ...">
+                </form>
+
+                <!-- Right side -->
+                <div class="db-topbar-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-user-chip">
+                        <div class="db-avatar">
+                            <span th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</span>
+                        </div>
+                        <span class="db-username" th:text="${member?.name != null ? member.name : userName}">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ── Page Content ── -->
+            <div class="db-content">
+                <!-- Page Header -->
+                <div class="db-page-header">
+                    <h1>Book History</h1>
+                    <h3>Your complete borrowing history</h3>
+                </div>
+
+                <div class="content">
+                    <div th:if="${success}" class="alert-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span th:text="${success}"></span>
+                    </div>
+                    <div th:if="${error}" class="alert-error">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span th:text="${error}"></span>
+                    </div>
+                    
+                    <!-- Status counters / info pills -->
+                    <div class="summary-row">
+                        <span class="summary-pill pill-total"><i class="fa-solid fa-list-ul"></i> Total: <strong th:text="${allIssues.size()}">0</strong></span>
+                        <span class="summary-pill pill-issued"><i class="fa-solid fa-clock"></i> Issued: <strong th:text="${activeCount}">0</strong></span>
+                        <span class="summary-pill pill-returned"><i class="fa-solid fa-circle-check"></i> Returned: <strong th:text="${returnedCount}">0</strong></span>
+                        <span class="summary-pill pill-overdue"><i class="fa-solid fa-circle-exclamation"></i> Overdue: <strong th:text="${overdueCount}">0</strong></span>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <a th:href="@{/user/my-books}" th:class="${filter == null or filter == 'all'} ? 'tab-btn active' : 'tab-btn'"><i class="fa-solid fa-border-all"></i> All</a>
+                        <a th:href="@{/user/my-books(filter='issued')}" th:class="${filter == 'issued'} ? 'tab-btn active' : 'tab-btn'"><i class="fa-solid fa-clock"></i> Issued</a>
+                        <a th:href="@{/user/my-books(filter='returned')}" th:class="${filter == 'returned'} ? 'tab-btn active' : 'tab-btn'"><i class="fa-solid fa-circle-check"></i> Returned</a>
+                        <a th:href="@{/user/my-books(filter='overdue')}" th:class="${filter == 'overdue'} ? 'tab-btn active' : 'tab-btn'"><i class="fa-solid fa-triangle-exclamation"></i> Overdue</a>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-wrapper">
+                        <table th:if="${displayIssues != null and !displayIssues.isEmpty()}" class="table-wide">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Book Title</th>
+                                    <th>Author</th>
+                                    <th>Category</th>
+                                    <th>Issue Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Days</th>
+                                    <th>Rental Cost</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="issue, stat : ${displayIssues}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td><strong th:text="${issue.book.title}"></strong></td>
+                                    <td th:text="${issue.book.author}"></td>
+                                    <td><span class="badge" th:style="'font-size:10px;padding:3px 8px;border-radius:6px;background:' + (${categoryColors[#strings.toLowerCase(issue.book.category)]} ?: '#64748b') + '22;color:' + (${categoryColors[#strings.toLowerCase(issue.book.category)]} ?: '#64748b') + ';'" th:text="${issue.book.category} ?: 'General'"></span></td>
+                                    <td th:text="${issue.issueDate}"></td>
+                                    <td>
+                                        <span th:if="${issue.status.name() == 'ISSUED'}"
+                                              th:class="${issue.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'badge badge-danger' : 'badge badge-warning'"
+                                              th:text="${issue.dueDate}"></span>
+                                        <span th:if="${issue.status.name() != 'ISSUED'}" th:text="${issue.dueDate}"></span>
+                                    </td>
+                                    <td th:text="${issue.returnDate} ?: '-'"></td>
+                                    <td th:text="${issue.borrowDays} ?: '-'"></td>
+                                    <td>
+                                        <div th:if="${issue.rentalCost != null and issue.rentalCost > 0}">
+                                            <span style="font-weight:700;color:#2e7d32;display:block;" th:text="'₹' + ${#numbers.formatDecimal(issue.rentalCost, 1, 2)}"></span>
+                                            <span th:if="${issue.rentPaid}" class="badge badge-success" style="font-size:9.5px;padding:2px 6px;margin-top:4px;display:inline-block;">PAID</span>
+                                            <button th:if="${!issue.rentPaid}" type="button" class="btn btn-success btn-sm" style="margin-top:4px;" th:onclick="'showPaymentModal(' + ${issue.id} + ', \'RENT\', ' + ${issue.rentalCost} + ')'"><i class="fa-solid fa-credit-card"></i> Pay Rent</button>
+                                        </div>
+                                        <span th:if="${issue.rentalCost == null or issue.rentalCost == 0}" style="color:#9ca3af;font-size:12.5px;">Free</span>
+                                    </td>
+                                    <td>
+                                        <span th:class="${issue.status.name() == 'RETURNED'} ? 'badge badge-success' :
+                                                       (${issue.status.name() == 'OVERDUE'} ? 'badge badge-danger' : 'badge badge-warning')"
+                                              th:text="${issue.status}"></span>
+                                    </td>
+                                    <td>
+                                        <!-- Return Book button -->
+                                        <button th:if="${issue.status.name() == 'ISSUED' or issue.status.name() == 'OVERDUE'}" 
+                                                type="button" class="btn btn-warning btn-sm" th:onclick="'showReturnModal(' + ${issue.id} + ')'"><i class="fa-solid fa-rotate-left"></i> Return</button>
+                                        <span th:if="${issue.status.name() == 'RETURNED'}" style="color:#9ca3af;font-size:12.5px;">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:if="${displayIssues == null or displayIssues.isEmpty()}" class="empty-state">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                            <p th:if="${filter == null or filter == 'all'}">You haven't borrowed any books yet.</p>
+                            <p th:if="${filter == 'issued'}">No books currently issued.</p>
+                            <p th:if="${filter == 'returned'}">No returned books yet.</p>
+                            <p th:if="${filter == 'overdue'}">No overdue books. Great job!</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+        </main>
+
+        <!-- ── Mobile Bottom Nav ── -->
+        <nav class="db-bottom-nav">
+            <a th:href="@{/user}" class="db-bnav"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a th:href="@{/user/books}" class="db-bnav"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+            <a th:href="@{/user/my-books}" class="db-bnav active"><i class="fa-solid fa-book-open-reader"></i><span>My Books</span></a>
+            <a th:href="@{/user/requests}" class="db-bnav"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+            <a th:href="@{/user/settings}" class="db-bnav"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
+
     </div>
 
     <!-- Custom Return Modal -->
     <div id="returnModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:16px;padding:28px;width:400px;max-width:90vw;text-align:center;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
-            <div style="width:56px;height:56px;background:#e6f4ea;color:#137333;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
+        <div class="modal-content" style="text-align:center;">
+            <div style="width:52px;height:52px;background:#ffebee;color:#c62828;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
                 <i class="fa-solid fa-circle-question"></i>
             </div>
-            <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f172a;font-family:sans-serif;">Confirm Return</h3>
-            <p style="margin:0 0 24px;font-size:14px;color:#64748b;line-height:1.5;font-family:sans-serif;">Are you sure you want to return this book?</p>
+            <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;color:#1a1a1a;">Confirm Return</h3>
+            <p style="margin:0 0 24px;font-size:13px;color:#5b6470;line-height:1.5;">Are you sure you want to return this book?</p>
             <div style="display:flex;gap:12px;justify-content:center;">
-                <button type="button" class="btn btn-outline" onclick="closeReturnModal()" style="margin:0;padding:10px 20px;font-size:14px;">Cancel</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="closeReturnModal()">Cancel</button>
                 <form id="returnForm" action="" method="post" style="margin:0;">
-                    <button type="submit" class="btn btn-success" style="margin:0;padding:10px 20px;font-size:14px;background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:600;border-radius:6px;">Confirm Return</button>
+                    <button type="submit" class="btn btn-success btn-sm">Confirm Return</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Nav -->
-    <nav class="bottom-nav">
-        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
-        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
-        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
-        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
-        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    </nav>
+    <!-- Reusable Payment Modal -->
+    <div id="paymentModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;">
+        <div class="modal-content" style="position:relative;">
+            <button onclick="closePaymentModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+            <div style="width:52px;height:52px;background:#e8f5e9;color:#2e7d32;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;color:#1a1a1a;text-align:center;">Secure Payment</h3>
+            <p style="margin:0 0 20px;font-size:13px;color:#5b6470;text-align:center;">You are paying <strong id="paymentAmountDisplay" style="color:#1a1a1a;">₹0.00</strong> for <span id="paymentTypeDisplay"></span>.</p>
+            
+            <form id="paymentForm" action="" method="post" style="margin:0;">
+                <div style="margin-bottom:20px;">
+                    <label style="display:block;font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:8px;">Select Payment Method</label>
+                    <select name="paymentMethod" required style="width:100%;padding:10px 12px;border:1px solid #e8e6df;border-radius:8px;font-size:13.5px;color:#1a1a1a;background:#fff;outline:none;">
+                        <option value="UPI">UPI (Google Pay, PhonePe, Paytm)</option>
+                        <option value="CARD">Credit / Debit Card</option>
+                        <option value="NET_BANKING">Net Banking</option>
+                        <option value="CASH">Cash at Counter</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closePaymentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm">Pay Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script th:src="@{/js/sockjs.min.js}"></script>
     <script th:src="@{/js/stomp.min.js}"></script>
-    <script th:src="@{/js/user.js(v='2.1')}"></script>
+    <script th:src="@{/js/user.js(v='2.2')}"></script>
     <script>
         function showReturnModal(issueId) {
             document.getElementById('returnForm').action = '/user/books/return/' + issueId;
@@ -166,37 +285,7 @@
         function closeReturnModal() {
             document.getElementById('returnModal').style.display = 'none';
         }
-    </script>
 
-    <!-- Reusable Payment Modal -->
-    <div id="paymentModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;font-family:sans-serif;">
-        <div style="background:#fff;border-radius:16px;padding:28px;width:400px;max-width:90vw;text-align:left;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);position:relative;">
-            <button onclick="closePaymentModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;"><i class="fa-solid fa-xmark"></i></button>
-            <div style="width:56px;height:56px;background:#ecfdf5;color:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;">
-                <i class="fa-solid fa-credit-card"></i>
-            </div>
-            <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#0f172a;text-align:center;">Secure Payment</h3>
-            <p style="margin:0 0 20px;font-size:14px;color:#64748b;text-align:center;">You are paying <strong id="paymentAmountDisplay" style="color:#0f172a;">₹0.00</strong> for <span id="paymentTypeDisplay"></span>.</p>
-            
-            <form id="paymentForm" action="" method="post" style="margin:0;">
-                <div style="margin-bottom:20px;">
-                    <label style="display:block;font-size:13px;font-weight:600;color:#334155;margin-bottom:8px;">Select Payment Method</label>
-                    <select name="paymentMethod" required style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#fff;outline:none;">
-                        <option value="UPI">UPI (Google Pay, PhonePe, Paytm)</option>
-                        <option value="CARD">Credit / Debit Card</option>
-                        <option value="NET_BANKING">Net Banking</option>
-                        <option value="CASH">Cash at Counter</option>
-                    </select>
-                </div>
-                <div style="display:flex;gap:12px;justify-content:flex-end;">
-                    <button type="button" class="btn btn-outline" onclick="closePaymentModal()" style="margin:0;padding:10px 16px;font-size:14px;border:1px solid #cbd5e1;border-radius:8px;background:none;cursor:pointer;">Cancel</button>
-                    <button type="submit" class="btn btn-success" style="margin:0;padding:10px 20px;font-size:14px;background:#10b981;color:#fff;border:none;cursor:pointer;font-weight:600;border-radius:8px;box-shadow:0 2px 4px rgba(16,185,129,0.2);">Pay Now</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
         function showPaymentModal(id, type, amount) {
             const form = document.getElementById('paymentForm');
             if (type === 'FINE') {

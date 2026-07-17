@@ -3,307 +3,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard | LMS</title>
+    <title>Dashboard | BookBase</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
-    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <style>
-        /* Dashboard page extras */
-        .dashboard-alerts { margin: 0 0 24px; }
-        .dash-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-top: 24px;
-        }
-        @media (max-width: 900px) {
-            .dash-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 768px) {
-            .dashboard-alerts { margin: 14px 14px 0; }
-            .dash-grid { grid-template-columns: 1fr; margin:0; }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
 </head>
-<body>
+<body class="dashboard-body">
 
-    <!-- Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- App Window Wrapper -->
+    <div class="db-window">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo">
-            <i class="fa-solid fa-book-open"></i>
-            <h2>Book<span>Base</span></h2>
-        </div>
-        <ul>
-            <li><a th:href="@{/user}" class="active"><i class="fa-solid fa-house"></i> Dashboard</a></li>
-            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
-            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
-            <li><a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
-            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
-            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
-            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#9ca3af;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;transition:color .2s;">
-                <i class="fa-solid fa-right-from-bracket" style="color:#ff6b00;"></i> Logout
-            </a>
-        </div>
-    </div>
+        <!-- ── Sidebar Overlay (mobile) ── -->
+        <div class="db-overlay" id="dbOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- MAIN -->
-    <div class="main">
-
-        <!-- ═══ MOBILE TOPBAR ═══ -->
-        <div class="mobile-topbar">
-            <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-            <span class="logo-text">Book<span>Base</span></span>
-            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
-                <i class="fa-regular fa-bell"></i>
-                <span class="notif-dot" th:if="${notifCount > 0}"></span>
-            </a>
-        </div>
-
-        <!-- ═══ DESKTOP HEADER ═══ -->
-        <div class="header">
-            <div>
-                <h1>My Dashboard</h1>
-                <h3>Welcome, <span th:text="${userName}"></span></h3>
-            </div>
-        </div>
-
-        <!-- ═══ DYNAMIC ALERTS / NOTICES ═══ -->
-        <div th:if="${dashboardNotices != null and !dashboardNotices.isEmpty()}" class="dashboard-alerts">
-            <div th:each="notice : ${dashboardNotices}" 
-                 th:class="${notice.type == 'error' ? 'alert alert-error' : 
-                           (notice.type == 'success' ? 'alert alert-success' : 'alert alert-warning')}"
-                 style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span th:text="${notice.text}"></span>
-                <form th:if="${notice.dismissible}" th:action="@{${notice.dismissUrl}}" method="post" style="margin: 0; display: inline-block;">
-                    <button type="submit" style="background: none; border: none; color: inherit; opacity: 0.6; cursor: pointer; font-size: 14px; display: flex; align-items: center; padding: 4px;" aria-label="Dismiss">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- ═══ DESKTOP STAT CARDS ═══ -->
-        <div class="cards">
-            <div class="card">
-                <i class="fa-solid fa-book"></i>
-                <h2 th:text="${totalBooks}">0</h2>
-                <p>Total Books in Library</p>
-            </div>
-            <div class="card">
-                <i class="fa-solid fa-book-open"></i>
-                <h2 th:text="${availableBooks}">0</h2>
-                <p>Available to Borrow</p>
-            </div>
-            <div class="card">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <h2 th:text="${#lists.size(myActiveIssues)}">0</h2>
-                <p>My Currently Issued</p>
-            </div>
-        </div>
-
-        <!-- ═══ MOBILE HERO BANNER ═══ -->
-        <div class="hero-banner">
-            <p class="hero-greeting">Welcome back 👋</p>
-            <p class="hero-name" th:text="${userName}">User</p>
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <div class="stat-num" th:text="${totalBooks}">0</div>
-                    <div class="stat-label">Total Books</div>
+        <!-- ══════════════════════════════
+             LEFT ICON SIDEBAR
+        ══════════════════════════════ -->
+        <aside class="db-sidebar" id="dbSidebar">
+            <!-- Sidebar Header / Toggle -->
+            <div class="db-sidebar-header">
+                <div class="db-logo-container" onclick="location.href='/user'">
+                    <div class="db-logo">
+                        <img th:src="@{/images/logo.png}" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="db-logo-fallback" style="display:none;"><i class="fa-solid fa-book-open-reader"></i></span>
+                    </div>
+                    <span class="db-logo-text">LMS <span>User</span></span>
                 </div>
-                <div class="hero-stat">
-                    <div class="stat-num" th:text="${availableBooks}">0</div>
-                    <div class="stat-label">Available</div>
-                </div>
-                <div class="hero-stat">
-                    <div class="stat-num" th:text="${#lists.size(myActiveIssues)}">0</div>
-                    <div class="stat-label">My Issued</div>
-                </div>
+                <button class="db-sidebar-toggle-btn" id="dbSidebarToggle" onclick="toggleSidebarSize(event)" aria-label="Toggle Sidebar Size">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
-        </div>
 
-        <!-- ═══ MOBILE CATEGORY CHIPS ═══ -->
-        <div class="category-section">
-            <p class="section-title">Quick Access</p>
-            <p class="section-sub">What will you look for?</p>
-            <div class="category-chips">
-                <a th:href="@{/user/books}" class="chip">
-                    <div class="chip-icon red"><i class="fa-solid fa-book"></i></div>
-                    <span>Browse</span>
+            <!-- Nav icons -->
+            <nav class="db-nav">
+                <a th:href="@{/user}" class="db-nav-item active" data-tip="Dashboard">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="db-nav-text">Dashboard</span>
                 </a>
-                <a th:href="@{/user/my-books}" class="chip">
-                    <div class="chip-icon orange"><i class="fa-solid fa-book-open-reader"></i></div>
-                    <span>History</span>
+                <a th:href="@{/user/books}" class="db-nav-item" data-tip="Browse Books">
+                    <i class="fa-solid fa-book"></i>
+                    <span class="db-nav-text">Browse Books</span>
                 </a>
-                <a th:href="@{/user/requests}" class="chip">
-                    <div class="chip-icon blue"><i class="fa-solid fa-paper-plane"></i></div>
-                    <span>Requests</span>
-                </a>
-                <a th:href="@{/user/fines}" class="chip">
-                    <div class="chip-icon green"><i class="fa-solid fa-indian-rupee-sign"></i></div>
-                    <span>Fines</span>
-                </a>
-                <a th:href="@{/user/notifications}" class="chip">
-                    <div class="chip-icon yellow"><i class="fa-solid fa-bell"></i></div>
-                    <span>Notices</span>
-                </a>
-                <a th:href="@{/user/settings}" class="chip">
-                    <div class="chip-icon orange" style="background:#f3e8ff; color:#a855f7;"><i class="fa-solid fa-gear"></i></div>
-                    <span>Settings</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- ═══ MOBILE: CURRENTLY ISSUED SCROLL ═══ -->
-        <div class="mobile-section">
-            <div class="mobile-section-header">
-                <h3>Currently Issued</h3>
-                <a th:href="@{/user/my-books}">View All →</a>
-            </div>
-            <div class="book-scroll" th:if="${myActiveIssues != null and !myActiveIssues.isEmpty()}">
-                <div class="book-card-mobile" th:each="issue : ${myActiveIssues}">
-                    <div class="book-icon"><i class="fa-solid fa-book"></i></div>
-                    <div class="book-title" th:text="${issue.book.title}"></div>
-                    <div class="book-author" th:text="${issue.book.author}"></div>
-                    <span th:class="${issue.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'book-due overdue' : 'book-due'"
-                          th:text="'Due: ' + ${issue.dueDate}"></span>
-                </div>
-            </div>
-            <div class="mobile-empty" th:if="${myActiveIssues == null or myActiveIssues.isEmpty()}">
-                <i class="fa-solid fa-book-open-reader"></i>
-                <p>No books currently issued.</p>
-            </div>
-        </div>
-
-        <!-- ═══ DESKTOP: Currently Issued Table ═══ -->
-        <div class="content desktop-only">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #ffe8d6;flex-wrap:wrap;gap:8px;">
-                <h2 style="margin:0;border:none;padding:0;color:#1a1a1a;">My Currently Issued Books</h2>
-                <a th:href="@{/user/my-books}" class="btn btn-sm" style="background:#ff6b00;">
-                    <i class="fa-solid fa-list"></i> View All History
-                </a>
-            </div>
-            <div class="table-wrapper">
-                <table th:if="${myActiveIssues != null and !myActiveIssues.isEmpty()}">
-                    <thead>
-                        <tr>
-                            <th>#</th><th>Book Title</th><th>Author</th>
-                            <th>Issue Date</th><th>Due Date</th><th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="issue, stat : ${myActiveIssues}">
-                            <td th:text="${stat.count}"></td>
-                            <td th:text="${issue.book.title}"></td>
-                            <td th:text="${issue.book.author}"></td>
-                            <td th:text="${issue.issueDate}"></td>
-                            <td>
-                                <span th:class="${issue.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'badge badge-danger' : 'badge badge-warning'"
-                                      th:text="${issue.dueDate}"></span>
-                            </td>
-                            <td><span class="badge badge-warning">ISSUED</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div th:if="${myActiveIssues == null or myActiveIssues.isEmpty()}" class="empty-state">
+                <a th:href="@{/user/my-books}" class="db-nav-item" data-tip="My Books">
                     <i class="fa-solid fa-book-open-reader"></i>
-                    <p>You have no books currently issued.</p>
-                </div>
-            </div>
-        </div>
+                    <span class="db-nav-text">My Books</span>
+                </a>
+                <a th:href="@{/user/requests}" class="db-nav-item" data-tip="Requests">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="db-nav-text">Requests</span>
+                </a>
+                <a th:href="@{/user/fines}" class="db-nav-item" data-tip="Fines">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <span class="db-nav-text">Fines</span>
+                </a>
+            </nav>
 
-        <!-- ═══ DESKTOP: Requests & Fines Grid ═══ -->
-        <div class="dash-grid desktop-details-grid">
-            
-            <!-- Book Requests Summary -->
-            <div class="content" style="margin-bottom:0;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #ffe8d6;flex-wrap:wrap;gap:8px;">
-                    <h2 style="margin:0;border:none;padding:0;color:#1a1a1a;">My Book Requests</h2>
-                    <a th:href="@{/user/requests}" class="btn btn-sm" style="background:#ff6b00;">
-                        <i class="fa-solid fa-paper-plane"></i> View All
+            <!-- Bottom icons -->
+            <div class="db-nav-bottom">
+                <a th:href="@{/user/settings}" class="db-nav-item" data-tip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span class="db-nav-text">Settings</span>
+                </a>
+                <a th:href="@{/logout}" class="db-nav-item db-logout" data-tip="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="db-nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ══════════════════════════════
+             MAIN CONTENT
+        ══════════════════════════════ -->
+        <main class="db-main" id="dbMain">
+
+            <!-- ── Mobile Top Bar ── -->
+            <header class="db-mobile-header">
+                <button class="db-hamburger" id="dbHamburger" onclick="toggleSidebar()" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <span class="db-mobile-logo">Book<span>Base</span></span>
+                <div class="db-mobile-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
                     </a>
+                    <div class="db-avatar-sm" th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</div>
                 </div>
-                <div class="table-wrapper">
-                    <table th:if="${myRequests != null and !myRequests.isEmpty()}">
-                        <thead>
-                            <tr>
-                                <th>Book Title</th><th>Request Date</th><th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="req, stat : ${myRequests}" th:if="${stat.index < 4}">
-                                <td><strong th:text="${req.book.title}"></strong></td>
-                                <td th:text="${req.requestDate}"></td>
-                                <td>
-                                    <span th:class="${req.status == 'APPROVED' ? 'badge badge-success' :
-                                                   (req.status == 'REJECTED' ? 'badge badge-danger' : 'badge badge-warning')}"
-                                          th:text="${req.status}"></span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div th:if="${myRequests == null or myRequests.isEmpty()}" class="empty-state" style="padding: 30px 10px;">
-                        <i class="fa-solid fa-paper-plane" style="font-size: 24px; color: #6ee7b7; margin-bottom: 8px;"></i>
-                        <p style="font-size: 13px;">No active requests.</p>
+            </header>
+
+            <!-- ── Desktop Top Bar ── -->
+            <header class="db-topbar">
+                <!-- Search -->
+                <form class="db-search" th:action="@{/user/books}" method="get">
+                    <i class="fa-solid fa-magnifying-glass db-search-icon"></i>
+                    <input type="text" name="search" placeholder="Search book name, author, edition ...">
+                </form>
+
+                <!-- Right side -->
+                <div class="db-topbar-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-user-chip">
+                        <div class="db-avatar">
+                            <span th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</span>
+                        </div>
+                        <span class="db-username" th:text="${member?.name != null ? member.name : userName}">User</span>
                     </div>
                 </div>
+            </header>
+
+            <!-- ── Alerts ── -->
+            <div th:if="${dashboardNotices != null and !dashboardNotices.isEmpty()}" class="db-alerts">
+                <div th:each="notice : ${dashboardNotices}"
+                     th:class="${'db-alert db-alert-' + notice.type}">
+                    <span th:text="${notice.text}">Notice description</span>
+                    <form th:if="${notice.dismissible}" th:action="@{${notice.dismissUrl}}" method="post" style="margin:0;">
+                        <button type="submit" class="db-alert-close" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+                    </form>
+                </div>
             </div>
 
-            <!-- Fines Summary -->
-            <div class="content" style="margin-bottom:0;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid #ffe8d6;flex-wrap:wrap;gap:8px;">
-                    <h2 style="margin:0;border:none;padding:0;color:#1a1a1a;">My Fines</h2>
-                    <a th:href="@{/user/fines}" class="btn btn-sm" style="background:#ff6b00;">
-                        <i class="fa-solid fa-indian-rupee-sign"></i> View All
+            <!-- ══════════════════════════════
+                 HERO / MAIN CONTENT SPLIT
+            ══════════════════════════════ -->
+            <section class="db-split-hero">
+                <!-- Left welcome and stat counter panel -->
+                <div class="db-hero-left">
+                    <h1 class="db-hero-title">Keep the story going..</h1>
+                    <p class="db-hero-sub">Don't let the story end just yet. Continue reading your last book and immerse yourself in the world of literature.</p>
+                    
+                    <a th:href="@{/user/books}" class="db-hero-btn">
+                        Start reading <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </a>
-                </div>
-                <div class="table-wrapper">
-                    <table th:if="${myFines != null and !myFines.isEmpty()}">
-                        <thead>
-                            <tr>
-                                <th>Book Title</th><th>Amount</th><th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="fine, stat : ${myFines}" th:if="${stat.index < 4}">
-                                <td><strong th:text="${fine.issuedBook.book.title}"></strong></td>
-                                <td th:text="'₹' + ${fine.amount}"></td>
-                                <td>
-                                    <span th:class="${fine.paid ? 'badge badge-success' : (fine.waived ? 'badge badge-info' : 'badge badge-danger')}"
-                                          th:text="${fine.paid ? 'PAID' : (fine.waived ? 'WAIVED' : 'UNPAID')}"></span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div th:if="${myFines == null or myFines.isEmpty()}" class="empty-state" style="padding: 30px 10px;">
-                        <i class="fa-solid fa-circle-check" style="font-size: 24px; color: #6ee7b7; margin-bottom: 8px;"></i>
-                        <p style="font-size: 13px;">No fines record found.</p>
+
+                    <!-- Stat Pills -->
+                    <div class="db-stat-row">
+                        <div class="db-stat-pill">
+                            <span class="db-stat-num" th:text="${totalBooks}">0</span>
+                            <span class="db-stat-lbl">Total Books</span>
+                        </div>
+                        <div class="db-stat-divider"></div>
+                        <div class="db-stat-pill">
+                            <span class="db-stat-num" th:text="${availableBooks}">0</span>
+                            <span class="db-stat-lbl">Available</span>
+                        </div>
+                        <div class="db-stat-divider"></div>
+                        <div class="db-stat-pill">
+                            <span class="db-stat-num" th:text="${#lists.size(myActiveIssues)}">0</span>
+                            <span class="db-stat-lbl">My Issued</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-        </div>
+
+                <!-- Right featured quote / Inspiration Spotlight -->
+                <div class="db-hero-right">
+                    <div class="db-feature-card" id="dbQuoteCard">
+                        <div class="db-feature-header">
+                            <div class="db-feature-avatar">
+                                <i class="fa-solid fa-quote-left" style="color: #e05e5e; font-size: 20px;"></i>
+                            </div>
+                            <div class="db-feature-meta">
+                                <h3 class="db-feature-name" id="dbQuoteAuthor" th:text="${randomQuote?.author != null ? randomQuote.author : 'Stephen King'}">Stephen King</h3>
+                                <span class="db-feature-role">Reading Inspiration</span>
+                            </div>
+                            <button class="db-feature-more" onclick="fetchNewQuote(event)" title="Get New Quote" style="outline: none; cursor: pointer;"><i class="fa-solid fa-rotate"></i></button>
+                        </div>
+                        <p class="db-feature-desc" id="dbQuoteText" th:text="${randomQuote?.text != null ? '“' + randomQuote.text + '”' : '“Books are uniquely portable magic.”'}">“Books are uniquely portable magic.”</p>
+                        <div class="db-feature-nav">
+                            <button class="db-feat-arrow" onclick="fetchNewQuote(event)" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="db-feat-arrow" onclick="fetchNewQuote(event)" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════
+                 BOOK CAROUSEL SECTION
+            ══════════════════════════════ -->
+            <section class="db-books-section">
+                <!-- Has active borrowed books -->
+                <div class="db-carousel-wrap" th:if="${myActiveIssues != null and !myActiveIssues.isEmpty()}">
+                    <div class="db-carousel" id="dbCarousel">
+                        <div class="db-book-card" th:each="issue : ${myActiveIssues}" th:onclick="|location.href='@{/user/my-books}'|">
+                            <div class="db-book-cover">
+                                <img th:if="${issue.book.imageUrl != null and !issue.book.imageUrl.isBlank()}"
+                                     th:src="${issue.book.imageUrl}"
+                                     th:alt="${issue.book.title}"
+                                     onerror="this.parentElement.innerHTML='<div class=\'db-book-placeholder\'><i class=\'fa-solid fa-book\'></i><span>' + this.alt + '</span></div>'">
+                                <div class="db-book-placeholder" th:if="${issue.book.imageUrl == null or issue.book.imageUrl.isBlank()}">
+                                    <i class="fa-solid fa-book"></i>
+                                    <span th:text="${issue.book.title}">Book Title</span>
+                                </div>
+                            </div>
+                            <div class="db-book-info">
+                                <p class="db-book-title" th:text="${issue.book.title}">Book Title</p>
+                                <p class="db-book-author" th:text="${issue.book.author}">Author</p>
+                                <span th:class="${issue.dueDate.isBefore(T(java.time.LocalDate).now())} ? 'db-due-badge overdue' : 'db-due-badge'"
+                                      th:text="'Due: ' + ${issue.dueDate}">Due Date</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="db-carousel-btn db-carousel-prev" onclick="scrollCarousel(-1)" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="db-carousel-btn db-carousel-next" onclick="scrollCarousel(1)" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <!-- Fallback catalogue carousel -->
+                <div class="db-carousel-wrap" th:if="${myActiveIssues == null or myActiveIssues.isEmpty()}">
+                    <div class="db-carousel" id="dbCarousel">
+                        <div class="db-book-card" th:each="book : ${allBooks}" th:onclick="|location.href='@{/user/books}'|">
+                            <div class="db-book-cover">
+                                <img th:if="${book.imageUrl != null and !book.imageUrl.isBlank()}"
+                                     th:src="${book.imageUrl}"
+                                     th:alt="${book.title}"
+                                     onerror="this.parentElement.innerHTML='<div class=\'db-book-placeholder\'><i class=\'fa-solid fa-book\'></i><span>' + this.alt + '</span></div>'">
+                                <div class="db-book-placeholder" th:if="${book.imageUrl == null or book.imageUrl.isBlank()}">
+                                    <i class="fa-solid fa-book"></i>
+                                    <span th:text="${book.title}">Book Title</span>
+                                </div>
+                            </div>
+                            <div class="db-book-info">
+                                <p class="db-book-title" th:text="${book.title}">Book Title</p>
+                                <p class="db-book-author" th:text="${book.author}">Author</p>
+                                <span class="db-due-badge" 
+                                      th:style="'background:' + (${categoryColors[#strings.toLowerCase(book.category)]} ?: '#64748b') + '22; color:' + (${categoryColors[#strings.toLowerCase(book.category)]} ?: '#64748b') + ';'"
+                                      th:text="${book.category} ?: 'General'">Category</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="db-carousel-btn db-carousel-prev" onclick="scrollCarousel(-1)" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="db-carousel-btn db-carousel-next" onclick="scrollCarousel(1)" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════
+                 REQUESTS & FINES WIDGET GRID
+            ══════════════════════════════ -->
+            <section class="db-grid-section">
+                <!-- Book Requests -->
+                <div class="db-panel">
+                    <div class="db-panel-head">
+                        <h3>My Book Requests</h3>
+                        <a th:href="@{/user/requests}" class="db-panel-link">View All</a>
+                    </div>
+                    <div th:if="${myRequests != null and !myRequests.isEmpty()}">
+                        <div class="db-list-item" th:each="req, stat : ${myRequests}" th:if="${stat.index < 5}">
+                            <div class="db-list-icon req"><i class="fa-solid fa-paper-plane"></i></div>
+                            <div class="db-list-body">
+                                <p class="db-list-title" th:text="${req.book.title}">Book Title</p>
+                                <p class="db-list-sub" th:text="${req.requestDate}">Date</p>
+                            </div>
+                            <span th:class="${req.status == 'APPROVED' ? 'db-badge green' : (req.status == 'REJECTED' ? 'db-badge red' : 'db-badge yellow')}"
+                                  th:text="${req.status}">STATUS</span>
+                        </div>
+                    </div>
+                    <div class="db-panel-empty" th:if="${myRequests == null or myRequests.isEmpty()}">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <p>No active requests.</p>
+                    </div>
+                </div>
+
+                <!-- My Fines -->
+                <div class="db-panel">
+                    <div class="db-panel-head">
+                        <h3>My Fines</h3>
+                        <a th:href="@{/user/fines}" class="db-panel-link">View All</a>
+                    </div>
+                    <div th:if="${myFines != null and !myFines.isEmpty()}">
+                        <div class="db-list-item" th:each="fine, stat : ${myFines}" th:if="${stat.index < 5}">
+                            <div class="db-list-icon fine"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                            <div class="db-list-body">
+                                <p class="db-list-title" th:text="${fine.issuedBook.book.title}">Book Title</p>
+                                <p class="db-list-sub" th:text="'₹' + ${fine.amount}">Amount</p>
+                            </div>
+                            <span th:class="${fine.paid ? 'db-badge green' : (fine.waived ? 'db-badge blue' : 'db-badge red')}"
+                                  th:text="${fine.paid ? 'PAID' : (fine.waived ? 'WAIVED' : 'UNPAID')}">STATUS</span>
+                        </div>
+                    </div>
+                    <div class="db-panel-empty" th:if="${myFines == null or myFines.isEmpty()}">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <p>No fines on record. Keep it up!</p>
+                    </div>
+                    <!-- Total Unpaid fines widget alert -->
+                    <div class="db-fine-total" th:if="${totalUnpaidFine != null and totalUnpaidFine > 0}">
+                        <span>Outstanding Unpaid Fines</span>
+                        <strong th:text="'₹' + ${totalUnpaidFine}">₹0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════
+                 BOTTOM FOOTER TICKER
+            ══════════════════════════════ -->
+            <footer class="db-ticker">
+                <div class="db-ticker-left">
+                    <i class="fa-regular fa-circle-question"></i>
+                    <span>Got chance to check out the
+                        <a th:href="@{/user/books}" class="db-ticker-link">new collection</a>
+                        of Harry Potter? It's a must-read for any fan of the series, don't miss out!
+                    </span>
+                </div>
+                <div class="db-ticker-right">
+                    <span class="db-ticker-count">
+                        <span th:text="${#lists.size(myActiveIssues)}">0</span>
+                        <span style="color:#9ca3af;font-weight:400;"> / </span>
+                        <span th:text="${totalBooks}">0</span>
+                        <span style="color:#9ca3af;font-weight:400;font-size:11px;margin-left:4px;">books</span>
+                    </span>
+                </div>
+            </footer>
+
+        </main>
+
+        <!-- ── Mobile Bottom Nav ── -->
+        <nav class="db-bottom-nav">
+            <a th:href="@{/user}" class="db-bnav active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a th:href="@{/user/books}" class="db-bnav"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+            <a th:href="@{/user/my-books}" class="db-bnav"><i class="fa-solid fa-book-open-reader"></i><span>My Books</span></a>
+            <a th:href="@{/user/requests}" class="db-bnav"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+            <a th:href="@{/user/settings}" class="db-bnav"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
 
     </div>
 
-    <!-- ═══ BOTTOM NAV (mobile only) ═══ -->
-    <nav class="bottom-nav">
-        <a th:href="@{/user}" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
-        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
-        <a th:href="@{/user/requests}"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
-        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
-        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    </nav>
-
+    <!-- Thymeleaf inline data passing to JS -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.__featureIssues = /*[[${myActiveIssues}]]*/ [];
+        window.__allBooks = /*[[${allBooks}]]*/ [];
+        /*]]>*/
+    </script>
     <script th:src="@{/js/sockjs.min.js}"></script>
     <script th:src="@{/js/stomp.min.js}"></script>
-    <script th:src="@{/js/user.js(v='2.1')}"></script>
+    <script th:src="@{/js/user.js(v='2.2')}"></script>
+    <script th:src="@{/js/user-dashboard.js}"></script>
 </body>
 </html>

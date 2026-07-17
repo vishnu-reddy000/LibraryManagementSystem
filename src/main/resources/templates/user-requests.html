@@ -5,108 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Requests | LMS</title>
     <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
-    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" th:href="@{/css/user-dashboard.css}">
 </head>
-<body>
+<body class="dashboard-body">
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <!-- App Window Wrapper -->
+    <div class="db-window">
 
-    <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo">
-            <i class="fa-solid fa-book-open"></i>
-            <h2>LMS <span>User</span></h2>
-        </div>
-        <ul>
-            <li><a th:href="@{/user}"><i class="fa-solid fa-house"></i> Dashboard</a></li>
-            <li><a th:href="@{/user/books}"><i class="fa-solid fa-book"></i> Browse Books</a></li>
-            <li><a th:href="@{/user/my-books}"><i class="fa-solid fa-book-open-reader"></i> Book History</a></li>
-            <li><a th:href="@{/user/requests}" class="active"><i class="fa-solid fa-paper-plane"></i> Book Request</a></li>
-            <li><a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i> My Fines</a></li>
-            <li><a th:href="@{/user/notifications}"><i class="fa-solid fa-bell"></i> Notification <span class="badge badge-danger" style="margin-left:auto; font-size:10px; padding:2px 6px;" th:if="${notifCount > 0}" th:text="${notifCount}"></span></a></li>
-            <li><a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i> Settings</a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a th:href="@{/logout}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;color:#94a3b8;text-decoration:none;border-radius:9px;font-size:13px;font-weight:500;">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>
-        </div>
-    </div>
+        <!-- ── Sidebar Overlay (mobile) ── -->
+        <div class="db-overlay" id="dbOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- MAIN -->
-    <div class="main">
-
-        <div class="mobile-topbar">
-            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
-                <span></span><span></span><span></span>
-            </button>
-            <span class="logo-text">LMS <span>User</span></span>
-            <a th:href="@{/user/notifications}" class="topbar-icon-mobile">
-                <i class="fa-regular fa-bell"></i>
-                <span class="notif-dot" th:if="${notifCount > 0}"></span>
-            </a>
-        </div>
-
-        <div class="header">
-            <div>
-                <h1>Book Requests</h1>
-                <h3>Track status of your requested books</h3>
+        <!-- ══════════════════════════════
+             LEFT ICON SIDEBAR
+        ══════════════════════════════ -->
+        <aside class="db-sidebar" id="dbSidebar">
+            <!-- Sidebar Header / Toggle -->
+            <div class="db-sidebar-header">
+                <div class="db-logo-container" onclick="location.href='/user'">
+                    <div class="db-logo">
+                        <img th:src="@{/images/logo.png}" alt="logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <span class="db-logo-fallback" style="display:none;"><i class="fa-solid fa-book-open-reader"></i></span>
+                    </div>
+                    <span class="db-logo-text">LMS <span>User</span></span>
+                </div>
+                <button class="db-sidebar-toggle-btn" id="dbSidebarToggle" onclick="toggleSidebarSize(event)" aria-label="Toggle Sidebar Size">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
-        </div>
 
-        <div class="content">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0fdf4;flex-wrap:wrap;gap:8px;">
-                <h2 style="margin:0;border:none;padding:0;">My Book Requests</h2>
-                <a th:href="@{/user/books}" class="btn btn-success btn-sm">
-                    <i class="fa-solid fa-search"></i> Request New Book
+            <!-- Nav icons -->
+            <nav class="db-nav">
+                <a th:href="@{/user}" class="db-nav-item" data-tip="Dashboard">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="db-nav-text">Dashboard</span>
+                </a>
+                <a th:href="@{/user/books}" class="db-nav-item" data-tip="Browse Books">
+                    <i class="fa-solid fa-book"></i>
+                    <span class="db-nav-text">Browse Books</span>
+                </a>
+                <a th:href="@{/user/my-books}" class="db-nav-item" data-tip="My Books">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <span class="db-nav-text">My Books</span>
+                </a>
+                <a th:href="@{/user/requests}" class="db-nav-item active" data-tip="Requests">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span class="db-nav-text">Requests</span>
+                </a>
+                <a th:href="@{/user/fines}" class="db-nav-item" data-tip="Fines">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                    <span class="db-nav-text">Fines</span>
+                </a>
+            </nav>
+
+            <!-- Bottom icons -->
+            <div class="db-nav-bottom">
+                <a th:href="@{/user/settings}" class="db-nav-item" data-tip="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span class="db-nav-text">Settings</span>
+                </a>
+                <a th:href="@{/logout}" class="db-nav-item db-logout" data-tip="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="db-nav-text">Logout</span>
                 </a>
             </div>
-            
-            <div class="table-wrapper">
-                <table th:if="${requests != null and !requests.isEmpty()}">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Book Title</th>
-                            <th>Author</th>
-                            <th>Request Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="req, stat : ${requests}">
-                            <td th:text="${stat.count}"></td>
-                            <td><strong th:text="${req.book.title}"></strong></td>
-                            <td th:text="${req.book.author}"></td>
-                            <td th:text="${req.requestDate}"></td>
-                            <td>
-                                <span th:class="${req.status == 'APPROVED' ? 'badge badge-success' :
-                                               (req.status == 'REJECTED' ? 'badge badge-danger' : 'badge badge-warning')}"
-                                      th:text="${req.status}"></span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div th:if="${requests == null or requests.isEmpty()}" class="empty-state">
-                    <i class="fa-solid fa-paper-plane" style="color: #6ee7b7;"></i>
-                    <p>You have not submitted any book requests yet.</p>
+        </aside>
+
+        <!-- ══════════════════════════════
+             MAIN CONTENT
+        ══════════════════════════════ -->
+        <main class="db-main" id="dbMain">
+
+            <!-- ── Mobile Top Bar ── -->
+            <header class="db-mobile-header">
+                <button class="db-hamburger" id="dbHamburger" onclick="toggleSidebar()" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <span class="db-mobile-logo">Book<span>Base</span></span>
+                <div class="db-mobile-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-avatar-sm" th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</div>
+                </div>
+            </header>
+
+            <!-- ── Desktop Top Bar ── -->
+            <header class="db-topbar">
+                <!-- Search -->
+                <form class="db-search" th:action="@{/user/books}" method="get">
+                    <i class="fa-solid fa-magnifying-glass db-search-icon"></i>
+                    <input type="text" name="search" placeholder="Search book name, author, edition ...">
+                </form>
+
+                <!-- Right side -->
+                <div class="db-topbar-right">
+                    <a th:href="@{/user/notifications}" class="db-notif-btn" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="db-notif-badge" th:if="${notifCount > 0}" th:text="${notifCount}"></span>
+                    </a>
+                    <div class="db-user-chip">
+                        <div class="db-avatar">
+                            <span th:text="${member?.name != null ? #strings.substring(member.name,0,1).toUpperCase() : #strings.substring(userName,0,1).toUpperCase()}">U</span>
+                        </div>
+                        <span class="db-username" th:text="${member?.name != null ? member.name : userName}">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ── Page Content ── -->
+            <div class="db-content">
+                <!-- Page Header -->
+                <div class="db-page-header">
+                    <h1>Book Requests</h1>
+                    <h3>Track status of your requested books</h3>
+                </div>
+
+                <div class="content">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #e8e6df;flex-wrap:wrap;gap:8px;">
+                        <h2 style="margin:0;border:none;padding:0;">My Book Requests</h2>
+                        <a th:href="@{/user/books}" class="btn btn-success btn-sm">
+                            <i class="fa-solid fa-search"></i> Request New Book
+                        </a>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table th:if="${requests != null and !requests.isEmpty()}">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Book Title</th>
+                                    <th>Author</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="req, stat : ${requests}">
+                                    <td th:text="${stat.count}"></td>
+                                    <td><strong th:text="${req.book.title}"></strong></td>
+                                    <td th:text="${req.book.author}"></td>
+                                    <td th:text="${req.requestDate}"></td>
+                                    <td>
+                                        <span th:class="${req.status == 'APPROVED' ? 'badge badge-success' :
+                                                       (req.status == 'REJECTED' ? 'badge badge-danger' : 'badge badge-warning')}"
+                                              th:text="${req.status}"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:if="${requests == null or requests.isEmpty()}" class="empty-state">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <p>You have not submitted any book requests yet.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Bottom Nav -->
-    <nav class="bottom-nav">
-        <a th:href="@{/user}"><i class="fa-solid fa-house"></i><span>Home</span></a>
-        <a th:href="@{/user/books}"><i class="fa-solid fa-book"></i><span>Browse</span></a>
-        <a th:href="@{/user/requests}" class="active"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
-        <a th:href="@{/user/fines}"><i class="fa-solid fa-indian-rupee-sign"></i><span>Fines</span></a>
-        <a th:href="@{/user/settings}"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
-    </nav>
+        </main>
+
+        <!-- ── Mobile Bottom Nav ── -->
+        <nav class="db-bottom-nav">
+            <a th:href="@{/user}" class="db-bnav"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a th:href="@{/user/books}" class="db-bnav"><i class="fa-solid fa-book"></i><span>Browse</span></a>
+            <a th:href="@{/user/my-books}" class="db-bnav"><i class="fa-solid fa-book-open-reader"></i><span>My Books</span></a>
+            <a th:href="@{/user/requests}" class="db-bnav active"><i class="fa-solid fa-paper-plane"></i><span>Requests</span></a>
+            <a th:href="@{/user/settings}" class="db-bnav"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+        </nav>
+
+    </div>
 
     <script th:src="@{/js/sockjs.min.js}"></script>
     <script th:src="@{/js/stomp.min.js}"></script>
-    <script th:src="@{/js/user.js(v='2.1')}"></script>
+    <script th:src="@{/js/user.js(v='2.2')}"></script>
 </body>
 </html>

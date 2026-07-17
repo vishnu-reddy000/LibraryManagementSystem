@@ -28,6 +28,7 @@ import com.library.demo.repository.FineRepository;
 import com.library.demo.repository.DismissedNotificationRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.library.demo.service.FineService;
+import com.library.demo.service.QuoteService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,6 +67,9 @@ public class UserController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private QuoteService quoteService;
+
     @GetMapping("/user")
     public String userDashboard(Authentication authentication, Model model) {
         String email = authentication.getName();
@@ -77,6 +81,8 @@ public class UserController {
                         .filter(b -> b.getAvailableCopies() > 0).count());
 
         model.addAttribute("myActiveIssues", issueService.getActiveIssuesByEmail(email));
+        model.addAttribute("allBooks", bookService.getAllBooks());
+        model.addAttribute("randomQuote", quoteService.getRandomQuote());
         
         if (user != null) {
             // Book Requests
@@ -93,6 +99,14 @@ public class UserController {
             // Notifications / Alerts
             model.addAttribute("dashboardNotices", getDashboardNotices(email));
         }
+
+        java.util.Map<String, String> colors = new java.util.HashMap<>();
+        categoryRepository.findAll().forEach(c -> {
+            if (c.getName() != null && c.getColor() != null) {
+                colors.put(c.getName().trim().toLowerCase(), c.getColor());
+            }
+        });
+        model.addAttribute("categoryColors", colors);
 
         populateCommonModelAttributes(email, model);
         return "user";
