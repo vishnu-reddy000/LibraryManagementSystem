@@ -99,7 +99,7 @@
 }
 .db-logo-fallback {
     font-size: 20px;
-    color: #e05e5e;
+    color: #ea580c;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -113,7 +113,7 @@
     letter-spacing: -0.3px;
 }
 .db-logo-text span {
-    color: #e05e5e;
+    color: #ea580c;
 }
 .db-sidebar.expanded .db-logo-text {
     display: inline-block;
@@ -196,9 +196,9 @@
     color: #1a1a1a;
 }
 .db-nav-item.active {
-    background: #e05e5e; /* Coral color from mockup */
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(224, 94, 94, 0.3);
+    background: #fbeee6; /* Soft warm orange-beige */
+    color: #ea580c;      /* Orange brand accent */
+    box-shadow: none;
 }
 .db-logout:hover {
     background: #fff0f0;
@@ -339,7 +339,7 @@
     position: absolute;
     top: -2px;
     right: -2px;
-    background: #e05e5e;
+    background: #ea580c;
     color: #ffffff;
     font-size: 9px;
     font-weight: 700;
@@ -467,7 +467,7 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    background: #1a1a1a;
+    background: #ea580c; /* Orange branding */
     color: #ffffff;
     font-size: 13.5px;
     font-weight: 600;
@@ -480,9 +480,9 @@
     cursor: pointer;
 }
 .db-hero-btn:hover {
-    background: #333333;
+    background: #d97706; /* Darker gold-orange */
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26,26,26,0.18);
+    box-shadow: 0 8px 24px rgba(234, 88, 12, 0.18);
 }
 .db-hero-btn i {
     font-size: 11px;
@@ -1152,7 +1152,7 @@
         color: #1a1a1a;
     }
     .db-mobile-logo span {
-        color: #d65a5a;
+        color: #ea580c;
     }
     .db-mobile-right {
         display: flex;
